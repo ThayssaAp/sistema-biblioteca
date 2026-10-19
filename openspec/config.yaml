@@ -1,0 +1,31 @@
+schema: spec-driven
+
+context: |
+  Project: Sistema de Biblioteca Comunitária.
+  Domain: Gerenciamento de empréstimos, devoluções, acervo de livros e leitores.
+  Business Rules:
+    - Prazo de empréstimo: 5 dias úteis (vencimento às 18h).
+    - Multa: R$ 10,00 por dia útil iniciado de atraso.
+    - Limite de 2 livros por leitor.
+    - Bloqueio por faixa etária e pendências de multas ou atrasos.
+    - Operações de exclusão, abono e gestão de gêneros exclusivas do Admin.
+  UX/UI:
+    - Fundo #F6F3EC, tom principal verde #1F5C4D.
+    - Tipografia: Inter para texto e JetBrains Mono para códigos (#ADS e #EMP).
+  Language: Escrever documentação e especificações em português brasileiro.
+
+rules:
+  proposal:
+    - Detalhar claramente o escopo e restrições de cada mudança.
+  specs:
+    - Descrever requisitos no formato testável e verificável.
+  tasks:
+    - Dividir as tarefas em passos pequenos e fáceis de validar.
+
+operations:
+  apply:
+    guidance:
+      - Validar se as regras de negócio de datas/multas e permissões de perfil foram respeitadas.
+  archive:
+    guidance:
+      - Confirmar a atualização dos specs consolidados após concluir a alteração.
