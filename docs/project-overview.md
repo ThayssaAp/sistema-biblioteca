@@ -33,3 +33,8 @@ Prover uma interface rápida e eficiente para os operadores do balcão, garantin
 - **Paleta:** Fundo em tom de papel claro (`#F6F3EC`), superfícies brancas, verde-escuro (`#1F5C4D`) como tom principal, acompanhado de indicação textual para acessibilidade.
 - **Tipografia:** Fonte `Inter` para texto geral e `JetBrains Mono` para os códigos `#ADS0000` e `#EMP000000`.
 - **Estratégia:** Uma tarefa principal por tela; foco inicial via teclado e atalhos rápidos.
+
+## 8. Arquitetura tecnológica
+- **Backend / Banco de Dados:** Xano (APIs REST e tabelas de banco).
+- **Frontend / Interface Gráfica:** HTML5, CSS3 e JavaScript puro (Vanilla JS).
+- **Abordagem de Desenvolvimento:** Entregas verticais completas. Cada Change deve entregar tanto a API/banco no backend quanto a tela e o fluxo de interface correspondentes em HTML/CSS/JS.
