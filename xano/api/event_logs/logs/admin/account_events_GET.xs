@@ -13,10 +13,10 @@ query "logs/admin/account_events" verb=GET {
       field_value = $auth.id
     } as $user
   
-    // Ensure only admin users can access this endpoint.
-    precondition ($user.role == "admin") {
+    // Ensure only administrators can access this endpoint.
+    precondition ($user.role == "ADMIN") {
       error_type = "accessdenied"
-      error = "Access Denied: Only administrators can view account events."
+      error = "Acesso negado: somente Admins podem consultar os eventos da conta."
     }
   
     // Retrieve all events for the specified account.

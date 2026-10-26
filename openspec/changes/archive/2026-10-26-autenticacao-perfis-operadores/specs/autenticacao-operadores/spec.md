@@ -72,6 +72,17 @@ O backend SHALL validar a identidade e o perfil do operador em cada operação p
 - **WHEN** um operador autenticado com perfil `ADMIN` solicita uma operação exclusiva de Admin
 - **THEN** o backend permite a operação
 
+### Requirement: Rotas de demonstração não podem conceder ou alterar perfis
+O backend SHALL desativar as rotas de demonstração de criação de conta e alteração de perfil que permitam a um usuário autenticado obter ou modificar privilégios fora do provisionamento administrativo de operadores.
+
+#### Scenario: Funcionário tenta criar conta pela rota de demonstração
+- **WHEN** um operador autenticado solicita a antiga rota de criação de conta
+- **THEN** o backend rejeita a operação sem criar conta ou alterar o perfil do operador
+
+#### Scenario: Operador tenta alterar perfil pela rota de demonstração
+- **WHEN** um operador autenticado solicita a antiga rota de alteração de perfil
+- **THEN** o backend rejeita a operação sem alterar o perfil de qualquer operador
+
 ### Requirement: Tela de login permite entrar no sistema
 A interface SHALL fornecer uma tela de login em HTML, CSS e JavaScript puro com campos de matrícula e senha, enviando as credenciais à API de autenticação e mostrando o resultado de forma acessível.
 

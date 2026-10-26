@@ -1,4 +1,4 @@
-// Checks that a user has the appropriate role level. This example sets a hierarchy of roles, and a user must pass the minimum level to execute.
+// Checks that an authenticated operator has the required library role.
 function "Getting Started Template/role-based access control" {
   input {
     // The ID of the user to check the role for.
@@ -11,7 +11,7 @@ function "Getting Started Template/role-based access control" {
   stack {
     // Defines a hierarchy of roles with numerical levels.
     var $role_hierarchy {
-      value = {admin: 2, member: 1}
+      value = {ADMIN: 2, FUNCIONARIO: 1}
     }
   
     // Retrieve the user's role from the database.
@@ -24,7 +24,7 @@ function "Getting Started Template/role-based access control" {
     // Ensure the user exists
     precondition ($user != null) {
       error_type = "inputerror"
-      error = "User not found with the provided ID."
+      error = "Operador não encontrado."
     }
   
     // Extract the user's role from the retrieved user data.
@@ -41,11 +41,16 @@ function "Getting Started Template/role-based access control" {
     var $required_role_level {
       value = $role_hierarchy|get:$input.required_role
     }
+
+    precondition ($user_role_level != null) {
+      error_type = "accessdenied"
+      error = "Perfil do operador inválido."
+    }
   
     // Ensure the required role is a valid, defined role in the hierarchy.
     precondition ($required_role_level > 0) {
       error_type = "inputerror"
-      error = "Invalid required role specified: " ~ $input.required_role
+      error = "Perfil de acesso requerido inválido."
     }
   
     // Check if the user's role level is sufficient for the required role.
@@ -53,13 +58,13 @@ function "Getting Started Template/role-based access control" {
       if ($user_role_level < $required_role_level) {
         throw {
           name = "accessdenied"
-          value = "User does not have the required role to perform this action. Required: " ~ $input.required_role ~ ", Actual: " ~ $user_role
+          value = "Operador sem permissão para esta ação."
         }
       }
     }
   }
 
   response = null
-  tags = ["xano:quick-start"]
+  tags = ["biblioteca"]
   guid = "t2CHloB5o3ZMDG1M_zxfc6mzcYw"
 }

@@ -1,4 +1,4 @@
-// Allows user to update the password in the password reset flow
+// Password reset is disabled; operator credentials are managed administratively in Xano.
 query "reset/update_password" verb=POST {
   api_group = "Authentication"
   auth = "user"
@@ -9,6 +9,11 @@ query "reset/update_password" verb=POST {
   }
 
   stack {
+    precondition (false) {
+      error_type = "accessdenied"
+      error = "A alteração de senha pelo operador não está disponível nesta versão."
+    }
+
     // Check that the password inputs are matching
     precondition ($input.password == $input.confirm_password) {
       error = "Passwords do not match!"

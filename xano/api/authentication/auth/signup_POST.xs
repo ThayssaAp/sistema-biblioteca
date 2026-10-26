@@ -1,4 +1,4 @@
-// Signup and retrieve an authentication token
+// Public signup is disabled; operators are provisioned administratively in Xano.
 query "auth/signup" verb=POST {
   api_group = "Authentication"
 
@@ -9,6 +9,11 @@ query "auth/signup" verb=POST {
   }
 
   stack {
+    precondition (false) {
+      error_type = "accessdenied"
+      error = "O cadastro público de operadores está desativado."
+    }
+
     // Check if a user record with that email exists
     db.get user {
       field_name = "email"
@@ -29,7 +34,7 @@ query "auth/signup" verb=POST {
         name      : $input.name
         email     : $input.email
         password  : $input.password
-        role      : "member"
+        role      : "FUNCIONARIO"
       }
     } as $user
   

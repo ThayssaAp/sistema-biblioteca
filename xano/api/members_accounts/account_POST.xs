@@ -15,6 +15,11 @@ query account verb=POST {
   }
 
   stack {
+    precondition (false) {
+      error_type = "accessdenied"
+      error = "A criação de contas não está disponível no sistema da biblioteca."
+    }
+
     // Create a new account record in the database.
     db.add account {
       enforce_hidden_fields = false
@@ -26,12 +31,12 @@ query account verb=POST {
       }
     } as $new_account
   
-    // Update the user record to link them to the new account and assign 'admin' role.
+    // Update the user record to link them to the new account and assign an administrator role.
     db.edit user {
       field_name = "id"
       field_value = $auth.id
       enforce_hidden_fields = false
-      data = {account_id: $new_account.id, role: "admin"}
+      data = {account_id: $new_account.id, role: "ADMIN"}
     } as $updated_user
   
     // Log event for new account created
