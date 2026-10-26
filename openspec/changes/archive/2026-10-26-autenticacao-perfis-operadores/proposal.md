@@ -10,7 +10,7 @@ O projeto ainda contém apenas o fluxo de autenticação de demonstração do qu
 - Implementar login e recuperação do perfil autenticado por API Xano, sem cadastro público e sem permitir que o cliente escolha ou altere o próprio perfil.
 - Aplicar autorização de perfil no servidor/backend; a interface não será considerada mecanismo de segurança.
 - Criar a tela de login em HTML, CSS e JavaScript puro, conectada à API, com estados de carregamento e erro e UX consistente com a biblioteca.
-- Desativar os fluxos públicos de cadastro e recuperação por e-mail do quick-start enquanto incompatíveis com a autenticação por matrícula; eventos de autenticação não devem registrar senhas, hashes ou tokens.
+- Desativar os fluxos públicos de cadastro e recuperação por e-mail do quick-start enquanto incompatíveis com a autenticação por matrícula, além das rotas de contas e alteração de perfil que não pertencem ao domínio e podem conceder privilégios; eventos de autenticação não devem registrar senhas, hashes ou tokens.
 - Provisionar manualmente o primeiro operador Admin por meio do Xano. Cadastro de operadores por tela/API fica fora desta change e poderá ser tratado em mudança posterior.
 
 ## Capabilities
@@ -25,7 +25,7 @@ O projeto ainda contém apenas o fluxo de autenticação de demonstração do qu
 
 ## Impact
 
-- Backend Xano: tabela de usuários do quick-start, endpoints de login/usuário autenticado e lógica reutilizável de controle de acesso.
+- Backend Xano: tabela de usuários do quick-start, endpoints de login/usuário autenticado, lógica reutilizável de controle de acesso e bloqueio das rotas de demonstração incompatíveis com os perfis de operador.
 - Frontend: novos arquivos estáticos HTML/CSS/JS para a tela de login; como ainda não existe uma estrutura frontend no repositório, a organização inicial será definida no design desta change.
 - Segurança: remover ou desabilitar o cadastro público de demonstração no fluxo de produção; armazenar senhas com hash e validar permissões no servidor.
 - Operação inicial: criar o primeiro Admin diretamente no Xano, sem endpoint público de bootstrap.

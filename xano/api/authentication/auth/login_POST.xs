@@ -1,47 +1,53 @@
-// Login and retrieve an authentication token
+// Authenticate an operator by employee registration number and password
 query "auth/login" verb=POST {
   api_group = "Authentication"
 
   input {
-    email email? filters=trim|lower
+    text matricula? filters=trim
     text password?
   }
 
   stack {
-    // Get the user record via email
+    precondition ($input.matricula != null && $input.matricula != "" && $input.password != null && $input.password != "") {
+      error_type = "accessdenied"
+      error = "Matrícula ou senha inválida."
+    }
+
+    // Look up only the fields needed to authenticate and identify the operator.
     db.get user {
-      field_name = "email"
-      field_value = $input.email
+      field_name = "matricula"
+      field_value = $input.matricula
       output = [
         "id"
-        "created_at"
         "name"
-        "email"
+        "matricula"
         "password"
-        "account_id"
         "role"
+        "account_id"
       ]
     } as $user
   
-    // Check to make sure a user with that email exists
+    // Keep failures indistinguishable to avoid disclosing registered matriculas.
     precondition ($user != null) {
       error_type = "accessdenied"
-      error = "Invalid Credentials."
+      error = "Matrícula ou senha inválida."
     }
   
-    // Check that the password matches the hashed password
     security.check_password {
       text_password = $input.password
       hash_password = $user.password
     } as $pass_result
   
-    // Verify that the password check passed
     precondition ($pass_result) {
       error_type = "accessdenied"
-      error = "Invalid Credentials."
+      error = "Matrícula ou senha inválida."
+    }
+
+    precondition ($user.role == "FUNCIONARIO" || $user.role == "ADMIN") {
+      error_type = "accessdenied"
+      error = "Matrícula ou senha inválida."
     }
   
-    // Create an authentication token
     security.create_auth_token {
       table = "user"
       extras = {}
@@ -49,18 +55,28 @@ query "auth/login" verb=POST {
       id = $user.id
     } as $authToken
   
-    // Create an event log for login
     function.run "Getting Started Template/create_event_log" {
       input = {
         user_id   : $user.id
         account_id: $user.account_id
         action    : "login"
-        metadata  : $user
+        metadata  : {
+          matricula: $user.matricula
+          role     : $user.role
+        }
       }
     } as $event_log
   }
 
-  response = {authToken: $authToken, user_id: $user.id}
-  tags = ["xano:quick-start"]
+  response = {
+    authToken: $authToken
+    operator : {
+      id       : $user.id
+      matricula: $user.matricula
+      name     : $user.name
+      role     : $user.role
+    }
+  }
+  tags = ["biblioteca"]
   guid = "g6E8E2wr8FPWccUg-4Qqxu2csFg"
 }

@@ -31,15 +31,17 @@ Não presumir que e-mails ou perfis `admin`/`member` de demonstração correspon
 
 Adaptar `POST /auth/login` para receber matrícula e senha e `GET /auth/me` para consultar a identidade e o perfil a partir do token atual. O backend valida a senha com as funções de segurança Xano, emite token somente após sucesso e usa uma resposta genérica para matrícula inexistente e senha incorreta. Preservar a expiração de token de 24 horas usada pelo quick-start nesta entrega.
 
-Desativar o cadastro público (`auth/signup`) e os fluxos de recuperação/login por e-mail do quick-start no grupo publicado para a aplicação. Recuperação de senha não é substituída nesta change; credenciais iniciais são provisionadas por processo administrativo no Xano, sem rota pública de bootstrap.
+Desativar o cadastro público (`auth/signup`) e os fluxos de recuperação/login por e-mail do quick-start no grupo publicado para a aplicação. Também desativar as rotas de quick-start de criação de conta e alteração de perfil: a primeira atribui `admin` ao próprio chamador e a segunda permite alterar perfis. Essas funções de conta não fazem parte do domínio da biblioteca. Recuperação de senha não é substituída nesta change; credenciais iniciais são provisionadas por processo administrativo no Xano, sem rota pública de bootstrap.
 
-**Alternativa considerada:** manter o cadastro e recuperação por e-mail disponíveis ao lado do login por matrícula. Foi descartada porque permitiria criar usuários sem provisionamento autorizado e deixaria fluxos que não correspondem à identidade ou às informações de contato definidas para operadores.
+**Alternativa considerada:** manter o cadastro, recuperação por e-mail e gerenciamento de contas/perfis disponíveis ao lado do login por matrícula. Foi descartada porque permitiria criar usuários sem provisionamento autorizado, elevar privilégios e deixar fluxos que não correspondem à identidade ou às informações de contato definidas para operadores.
 
 ### Validar perfil usando o registro do operador no backend
 
 Adaptar a função reutilizável de controle de acesso para reconhecer somente `FUNCIONARIO` e `ADMIN`. Endpoints protegidos consultam o operador autenticado e verificam seu perfil no servidor antes de executar a operação; não confiam em perfil informado pelo navegador ou em estado visual da interface. O perfil não é alterável pelo login.
 
 **Alternativa considerada:** controlar permissões apenas escondendo opções da interface. Foi descartada por não proteger chamadas diretas à API.
+
+Os endpoints que ainda consultam o papel administrativo devem comparar com `ADMIN`; atualizar apenas os valores da tabela deixaria essas verificações incompatíveis. A criação de contas e a alteração de perfis do quick-start ficam bloqueadas em vez de reaproveitadas, pois não há necessidade de contas multi-tenant ou gerenciamento de operadores nesta change.
 
 ### Fazer auditoria sem guardar credenciais
 
@@ -57,7 +59,7 @@ A tela usa a paleta da biblioteca, tipografia Inter com fallback, rótulos assoc
 
 ## Risks / Trade-offs
 
-- [Dados de demonstração podem existir no workspace Xano e não ter matrícula] → Conferir os dados antes da sincronização; não fazer conversão automática nem descartar registros sem decisão explícita.
+- [Dados de demonstração podem existir no workspace Xano e não ter matrícula] → Conferir os dados antes da sincronização; não fazer conversão automática nem descartar registros sem decisão explícita. O snapshot de scripts não contém registros de tabela; se a inspeção de registros não estiver disponível, bloquear a sincronização até uma revisão no Xano.
 - [Rotas de signup e recuperação por e-mail podem continuar publicadas fora do repositório] → Verificar a configuração do workspace Xano e desativá-las no ambiente da aplicação junto com a sincronização dos scripts.
 - [Token em armazenamento do navegador é acessível a JavaScript da mesma origem] → Usar `sessionStorage`, evitar HTML dinâmico não confiável e não armazenar senhas; uma política de cookies HttpOnly exigiria arquitetura de sessão diferente.
 - [A origem final da interface ainda não está definida e CORS pode bloquear chamadas] → Manter a URL da API configurável e autorizar explicitamente a origem de implantação no Xano antes da validação integrada.

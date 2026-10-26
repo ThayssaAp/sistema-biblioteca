@@ -1,4 +1,4 @@
-// Request a one-time magic link to reset password
+// Email-based password reset is disabled for library operators.
 query "reset/request-reset-link" verb=GET {
   api_group = "Authentication"
 
@@ -7,6 +7,11 @@ query "reset/request-reset-link" verb=GET {
   }
 
   stack {
+    precondition (false) {
+      error_type = "accessdenied"
+      error = "A recuperação de senha por e-mail não está disponível."
+    }
+
     // Generate a one-time magic link
     function.run "Getting Started Template/generate_magic_link" {
       input = {email: $input.email}

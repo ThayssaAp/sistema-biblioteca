@@ -12,6 +12,11 @@ query "admin/user_role" verb=POST {
   }
 
   stack {
+    precondition (false) {
+      error_type = "accessdenied"
+      error = "A alteração de perfis não está disponível nesta versão."
+    }
+
     // Retrieve the authenticated user's details
     db.get user {
       field_name = "id"
@@ -21,7 +26,7 @@ query "admin/user_role" verb=POST {
   
     // Verify the authenticated user has the 'admin' role
     function.run "Getting Started Template/role-based access control" {
-      input = {user_id: $admin_user.id, required_role: "admin"}
+      input = {user_id: $admin_user.id, required_role: "ADMIN"}
     } as $role_check
   
     // Retrieve the target user's details to be updated

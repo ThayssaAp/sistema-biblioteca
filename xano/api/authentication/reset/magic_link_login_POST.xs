@@ -1,4 +1,4 @@
-// Exchanges magic token for auth token. Logs in user with the one-time link.
+// Email-based magic-link login is disabled for library operators.
 query "reset/magic-link-login" verb=POST {
   api_group = "Authentication"
 
@@ -8,6 +8,11 @@ query "reset/magic-link-login" verb=POST {
   }
 
   stack {
+    precondition (false) {
+      error_type = "accessdenied"
+      error = "O login por link de e-mail não está disponível."
+    }
+
     // Check to make sure the magic token exists
     precondition ($input.magic_token != null) {
       error = "magic_token is required but was not provided."

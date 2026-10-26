@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Entrar | Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="login-card" aria-labelledby="page-title">
+        <div class="brand-mark" aria-hidden="true">B</div>
+        <p class="eyebrow">Atendimento de balcão</p>
+        <h1 id="page-title">Biblioteca Comunitária</h1>
+        <p class="intro">Entre com suas credenciais de operador para continuar.</p>
+
+        <form id="login-form" class="login-form" novalidate>
+          <div class="field">
+            <label for="matricula">Matrícula</label>
+            <input
+              id="matricula"
+              name="matricula"
+              type="text"
+              autocomplete="username"
+              autocapitalize="off"
+              spellcheck="false"
+              required
+              autofocus
+            >
+          </div>
+
+          <div class="field">
+            <label for="password">Senha</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            >
+          </div>
+
+          <button id="submit-button" class="primary-button" type="submit">
+            <span id="button-label">Entrar</span>
+          </button>
+        </form>
+
+        <p id="login-status" class="status" role="status" aria-live="polite"></p>
+        <section id="session-panel" class="session-panel" aria-live="polite" hidden>
+          <p class="session-label">Sessão ativa</p>
+          <p id="operator-name" class="operator-name"></p>
+          <p id="operator-role" class="operator-role"></p>
+          <button id="logout-button" class="secondary-button" type="button">
+            Encerrar sessão
+          </button>
+        </section>
+
+        <p class="security-note">Acesso restrito a funcionários e administradores.</p>
+      </section>
+    </main>
+  </body>
+</html>
