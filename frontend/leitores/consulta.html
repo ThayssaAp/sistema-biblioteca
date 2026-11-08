@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Consultar leitores | Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="card wide" aria-labelledby="page-title">
+        <p class="eyebrow">Atendimento de balcão</p>
+        <h1 id="page-title">Consultar leitores</h1>
+        <p class="intro">Busque por CPF ou por qualquer trecho do nome.</p>
+        <form id="search-form" class="search-form">
+          <label for="search">CPF ou nome</label>
+          <div class="search-row"><input id="search" name="search" autocomplete="off" autofocus><button class="primary-button" type="submit">Buscar</button></div>
+        </form>
+        <p id="results-status" class="status" role="status" aria-live="polite">Informe um CPF ou nome para começar.</p>
+        <div class="table-wrap">
+          <table><caption class="sr-only">Resultados da consulta de leitores</caption><thead><tr><th>CPF</th><th>Nome</th><th>Nascimento</th><th>Endereço</th><th>Telefone</th><th>E-mail</th></tr></thead><tbody id="readers-body"></tbody></table>
+        </div>
+        <div class="pagination"><button id="previous-page" class="secondary-button" type="button" disabled>Anterior</button><button id="next-page" class="secondary-button" type="button" disabled>Próxima</button></div>
+        <nav class="links" aria-label="Leitores"><a href="./cadastro.html">Cadastrar leitor</a><a href="../login/index.html">Voltar</a></nav>
+      </section>
+    </main>
+  </body>
+</html>

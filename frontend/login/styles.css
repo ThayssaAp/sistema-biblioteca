@@ -189,6 +189,19 @@ input:focus-visible {
   font-size: 14px;
 }
 
+.reader-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+.reader-links a {
+  color: #1f5c4d;
+  font-weight: 650;
+}
+
 .secondary-button {
   width: 100%;
   border: 1px solid #1f5c4d;
