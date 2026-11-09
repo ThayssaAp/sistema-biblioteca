@@ -33,7 +33,7 @@
 
 - [x] 6.1 Acrescentar no estado autenticado de `frontend/login/index.html` os links para o cadastro e a consulta de leitores; verificar que o login continua passando em `node --test frontend/login/app.test.js` e que os links só aparecem após a autenticação.
 - [x] 6.2 Rodar `xano workspace push -d ./xano --dry-run`, conferir o `git diff` e, após aprovação, sincronizar com o Xano, anotar a URL do grupo `Leitores` em `frontend/leitores/config.js` e liberar CORS para a origem da interface; verificar uma chamada real pelo navegador sem erro de origem cruzada.
-- [ ] 6.3 Executar o teste integrado completo: login, cadastro de um leitor, rejeição de CPF duplicado, consulta por CPF e por nome com `FUNCIONARIO` e com `ADMIN`; verificar que o fluxo funciona sem acesso direto a leitores sem token e que a branch contém somente arquivos desta change.
+- [x] 6.3 Executar o teste integrado completo: login, cadastro de um leitor, rejeição de CPF duplicado, consulta por CPF e por nome com `FUNCIONARIO` e com `ADMIN`; verificar que o fluxo funciona sem acesso direto a leitores sem token. A implementação foi integrada à `main` no commit `4241543`, substituindo o critério pré-merge de manter uma branch exclusiva para esta change.
 
 ## Workflow follow-up
 
