@@ -23,6 +23,23 @@
     return role === "ADMIN";
   }
 
+  function bookPayloadFromEntries(entries) {
+    const book = Object.fromEntries(entries);
+    book.title = book.title.trim();
+    book.genre_id = Number(book.genre_id);
+    if (book.publication_year === "") {
+      delete book.publication_year;
+    } else {
+      book.publication_year = Number(book.publication_year);
+    }
+    if (!book.isbn) {
+      delete book.isbn;
+    } else {
+      book.isbn = book.isbn.trim();
+    }
+    return book;
+  }
+
   function createCatalogClient(config, fetchImplementation) {
     const authBaseUrl = typeof config?.apiBaseUrl === "string"
       ? config.apiBaseUrl.replace(/\/+$/, "")
@@ -117,6 +134,7 @@
 
   const publicApi = Object.freeze({
     createCatalogClient,
+    bookPayloadFromEntries,
     actionErrorMessage,
     canManageGenres,
     storageKeys: Object.freeze({ token: TOKEN_KEY, operator: OPERATOR_KEY }),
@@ -359,19 +377,7 @@
   bookForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const formData = new FormData(bookForm);
-    const book = Object.fromEntries(formData.entries());
-    book.title = book.title.trim();
-    book.genre_id = Number(book.genre_id);
-    if (book.publication_year === "") {
-      delete book.publication_year;
-    } else {
-      book.publication_year = Number(book.publication_year);
-    }
-    if (!book.isbn) {
-      delete book.isbn;
-    } else {
-      book.isbn = book.isbn.trim();
-    }
+    const book = bookPayloadFromEntries(formData.entries());
 
     await runAction(async () => {
       const created = await client.createBook(token, book);

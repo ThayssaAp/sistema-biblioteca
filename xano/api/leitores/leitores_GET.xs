@@ -22,13 +22,13 @@ query leitores verb=GET {
       error = "O parâmetro per_page deve estar entre 1 e 50."
     }
     var $cpf_filter {
-      value = $input.cpf|regex_replace:"[^0-9]":""
+      value = "/[^0-9]/"|regex_replace:"":$input.cpf
     }
     db.query reader {
-      where = (($cpf_filter == null || $cpf_filter == "") || $db.reader.cpf == $cpf_filter) && (($input.nome == null || $input.nome == "") || $db.reader.name contains $input.nome)
-      sort = {reader.name: "asc"}
-      output = ["id", "cpf", "name", "birth_date", "address", "phone", "email"]
-      return = {type: "list", paging: {page: $input.page, per_page: $input.per_page, totals: true}}
+      where = (($cpf_filter == null || $cpf_filter == "") || $db.reader.cpf == $cpf_filter) && (($input.nome == null || $input.nome == "") || $db.reader.name includes $input.nome)
+      sort = {name: "asc"}
+      output = ["curPage", "nextPage", "itemsTotal", "perPage", "items.id", "items.cpf", "items.name", "items.birth_date", "items.address", "items.phone", "items.email"]
+      return = {type: "list", paging: {page: $input.page, per_page: $input.per_page, totals: true, metadata: true}}
     } as $paged
   }
 

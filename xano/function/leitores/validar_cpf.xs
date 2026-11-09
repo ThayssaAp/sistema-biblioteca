@@ -6,7 +6,7 @@ function "Leitores/validar_cpf" {
 
   stack {
     var $normalized {
-      value = $input.cpf|regex_replace:"[^0-9]":""
+      value = "/[^0-9]/"|regex_replace:"":$input.cpf
     }
     precondition (($normalized|strlen) == 11) {
       error_type = "inputerror"
@@ -39,7 +39,7 @@ function "Leitores/validar_cpf" {
     var $check_2 {
       value = $digit_2 < 2 ? 0 : 11 - $digit_2
     }
-    precondition ($check_1 != $n9 || $check_2 != $n10) {
+    precondition ($check_1 == $n9 && $check_2 == $n10) {
       error_type = "inputerror"
       error = "CPF inválido."
     }
