@@ -2,54 +2,57 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
+const {
+  validateReader,
+  createClient
+} = require("../leitores/app.js");
 
-// Mock fetch API
-const mockFetch = (response) => {
-  global.fetch = async () => ({
-    ok: response.ok,
-    json: async () => response.body,
+test("fluxo atual de cadastro valida senha temporária e campos obrigatórios", () => {
+  const errors = validateReader({
+    cpf: "529.982.247-25",
+    name: "João",
+    birth_date: "25/05/1990",
+    address: "Rua A",
+    phone: "(11) 98765-4321",
+    email: "",
+    temporary_password: "Temp1234"
   });
-};
-
-test("Cadastro de leitor com sucesso", async () => {
-  mockFetch({ ok: true, body: { reader: { name: "João", email: "joao@email.com", phone: "123456789" } } });
-
-  const form = document.createElement("form");
-  form.innerHTML = `
-    <input id="name" value="João" />
-    <input id="email" value="joao@email.com" />
-    <input id="phone" value="123456789" />
-    <div id="message"></div>
-  `;
-  document.body.appendChild(form);
-
-  require("./app.js");
-  form.dispatchEvent(new Event("submit"));
-
-  const message = document.getElementById("message").textContent;
-  assert.equal(message, "Leitor cadastrado com sucesso!");
+  assert.deepEqual(errors, {});
 });
 
-test("Consulta de leitores com sucesso", async () => {
-  mockFetch({
-    ok: true,
-    body: {
-      readers: [
-        { name: "João", email: "joao@email.com", phone: "123456789" },
-        { name: "Maria", email: "maria@email.com", phone: null },
-      ],
-    },
+test("cliente atual cadastra leitor pelo endpoint de leitores", async () => {
+  const storage = {
+    getItem: () => "token-operador",
+    removeItem: () => {}
+  };
+  let request;
+  const client = createClient({ apiBaseUrl: "https://api.test" }, async (url, options) => {
+    request = { url, options };
+    return { ok: true, status: 201, json: async () => ({ id: 8 }) };
+  }, storage, () => {});
+
+  await client.createReader({
+    cpf: "529.982.247-25",
+    name: "João",
+    birth_date: "25/05/1990",
+    address: "Rua A",
+    phone: "(11) 98765-4321",
+    temporary_password: "Temp1234"
   });
 
-  const leitoresDiv = document.createElement("div");
-  leitoresDiv.id = "leitores";
-  document.body.appendChild(leitoresDiv);
+  assert.equal(request.url, "https://api.test/leitores");
+  assert.equal(request.options.headers.Authorization, "Bearer token-operador");
+});
 
-  require("./app.js");
-  await new Promise((resolve) => setTimeout(resolve, 0)); // Aguarda DOMContentLoaded
-
-  const leitores = leitoresDiv.children;
-  assert.equal(leitores.length, 2);
-  assert.equal(leitores[0].textContent, "João - joao@email.com - 123456789");
-  assert.equal(leitores[1].textContent, "Maria - maria@email.com - Sem telefone");
+test("páginas atuais de leitores permanecem ligadas ao app compartilhado", () => {
+  const directory = path.join(__dirname, "..", "leitores");
+  const registration = readFileSync(path.join(directory, "cadastro.html"), "utf8");
+  const consultation = readFileSync(path.join(directory, "consulta.html"), "utf8");
+  assert.match(registration, /id="reader-form"/);
+  assert.match(registration, /name="temporary_password"/);
+  assert.match(consultation, /id="search-form"/);
+  assert.match(registration, /src="\.\/app\.js"/);
+  assert.match(consultation, /src="\.\/app\.js"/);
 });

@@ -81,6 +81,40 @@ test("troca de senha usa bearer do leitor e remove o estado pendente", async () 
   assert.equal(values.has(storageKeys.pending), false);
 });
 
+test("consulta livros e gêneros usa somente o token do leitor e serializa filtros", async () => {
+  const values = new Map([[storageKeys.token, "token-leitor"]]);
+  const storage = {
+    getItem: (key) => values.get(key) || null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key)
+  };
+  const requests = [];
+  const client = createClient({ apiBaseUrl: "https://api.test" }, async (url, options) => {
+    requests.push({ url, options });
+    return response(200, []);
+  }, storage, () => {});
+
+  await client.listGenres();
+  await client.listBooks({ title: "Dom", genre_id: "2", status: "", age_rating: "12+" });
+  assert.equal(requests[0].url, "https://api.test/genres");
+  assert.equal(requests[1].url, "https://api.test/books?title=Dom&genre_id=2&age_rating=12%2B");
+  assert.equal(requests[0].options.headers.Authorization, "Bearer token-leitor");
+});
+
+test("consulta limpa sessão e redireciona quando o token expira", async () => {
+  const values = new Map([[storageKeys.token, "token-expirado"]]);
+  const storage = {
+    getItem: (key) => values.get(key) || null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key)
+  };
+  let redirect;
+  const client = createClient({ apiBaseUrl: "https://api.test" }, async () => response(401, {}), storage, (url) => { redirect = url; });
+  await assert.rejects(() => client.listBooks({}), { message: "SESSION_INVALID" });
+  assert.equal(values.get(storageKeys.token), undefined);
+  assert.equal(redirect, "./index.html");
+});
+
 test("telas do portal possuem login, troca obrigatória e acessibilidade básica", () => {
   const directory = __dirname;
   const login = readFileSync(path.join(directory, "index.html"), "utf8");
@@ -91,4 +125,9 @@ test("telas do portal possuem login, troca obrigatória e acessibilidade básica
   assert.match(change, /for="password_confirmation"/);
   const home = readFileSync(path.join(directory, "home.html"), "utf8");
   assert.match(home, /id="form-status"/);
+  assert.match(home, /href="\.\/catalog\.html"/);
+  const catalog = readFileSync(path.join(directory, "catalog.html"), "utf8");
+  assert.match(catalog, /id="catalog-form"/);
+  assert.match(catalog, /id="genre_id"/);
+  assert.match(catalog, /id="books-list"/);
 });

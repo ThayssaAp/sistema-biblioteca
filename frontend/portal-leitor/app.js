@@ -7,6 +7,15 @@
   const LOGIN_URL = "./index.html";
   const CHANGE_URL = "./change-password.html";
   const HOME_URL = "./home.html";
+  const CATALOG_URL = "./catalog.html";
+
+  function destinationFromLocation(location, fallback) {
+    try {
+      return new URLSearchParams(location.search || "").get("next") === "catalog" ? CATALOG_URL : fallback;
+    } catch {
+      return fallback;
+    }
+  }
 
   function normalizeCpf(value) {
     return String(value || "").replace(/\D/g, "");
@@ -60,7 +69,7 @@
     async function call(path, options) {
       const token = storage.getItem(TOKEN_KEY);
       const headers = Object.assign({ Accept: "application/json" }, (options || {}).headers || {});
-      if (token) headers.Authorization = `Bearer ${token}`;
+      if (token) headers.Authorization = "Bearer " + token;
       const response = await request(`${baseUrl}${path}`, Object.assign({}, options, { headers }));
       if (response.status === 401) {
         clear();
@@ -109,6 +118,20 @@
         if (!response.ok) throw new Error("SESSION_INVALID");
         return readJson(response);
       },
+      async listGenres() {
+        const response = await call("/genres");
+        if (!response.ok) throw new Error("GENRES_REQUEST_FAILED");
+        return readJson(response);
+      },
+      async listBooks(filters) {
+        const params = new URLSearchParams();
+        Object.entries(filters || {}).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && String(value).trim() !== "") params.set(key, String(value).trim());
+        });
+        const response = await call(`/books?${params.toString()}`);
+        if (!response.ok) throw new Error("BOOKS_REQUEST_FAILED");
+        return readJson(response);
+      },
       clear
     });
   }
@@ -140,7 +163,8 @@
       try {
         const result = await client.login(data.cpf, data.password);
         password.value = "";
-        location.replace(result.requiresPasswordChange ? CHANGE_URL : HOME_URL);
+        const destination = destinationFromLocation(location, HOME_URL);
+        location.replace(result.requiresPasswordChange ? `${CHANGE_URL}?next=catalog` : destination);
       } catch {
         status.textContent = "Não foi possível entrar. Confira suas credenciais e tente novamente.";
         password.value = "";
@@ -171,7 +195,7 @@
       try {
         await client.changePassword(data.new_password, data.password_confirmation);
         form.reset();
-        location.replace(HOME_URL);
+        location.replace(destinationFromLocation(location, HOME_URL));
       } catch (error) {
         status.textContent = error.message === "A nova senha deve ser diferente da senha temporária."
           ? error.message
@@ -180,29 +204,110 @@
         button.disabled = false;
       }
 
-      function setupHome(document, client, storage, location) {
-        const heading = document.getElementById("page-title");
-        if (!heading) return;
-        const logout = document.getElementById("logout-link");
-        if (logout) {
-          logout.addEventListener("click", (event) => {
-            event.preventDefault();
-            client.clear();
-            location.replace(LOGIN_URL);
-          });
-        }
-        if (!storage.getItem(TOKEN_KEY)) {
-          location.replace(LOGIN_URL);
-          return;
-        }
-        if (storage.getItem(PENDING_KEY) === "true") {
-          location.replace(CHANGE_URL);
-          return;
-        }
-        client.currentReader().catch(() => {
-          location.replace(LOGIN_URL);
-        });
+    });
+  }
+
+  function setupHome(document, client, storage, location) {
+    const heading = document.getElementById("page-title");
+    if (!heading) return;
+    const logout = document.getElementById("logout-link");
+    if (logout) {
+      logout.addEventListener("click", (event) => {
+        event.preventDefault();
+        client.clear();
+        location.replace(LOGIN_URL);
+      });
+    }
+    const catalogLink = document.getElementById("catalog-link");
+    if (catalogLink) {
+      catalogLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        location.replace(CATALOG_URL);
+      });
+    }
+    if (!storage.getItem(TOKEN_KEY)) {
+      location.replace(LOGIN_URL);
+      return;
+    }
+    if (storage.getItem(PENDING_KEY) === "true") {
+      location.replace(CHANGE_URL);
+      return;
+    }
+    client.currentReader().catch(() => {
+      location.replace(LOGIN_URL);
+    });
+  }
+
+  function setupCatalog(document, client, storage, location) {
+    const form = document.getElementById("catalog-form");
+    if (!form) return;
+    const status = document.getElementById("catalog-status");
+    const results = document.getElementById("books-list");
+    const genre = document.getElementById("genre_id");
+    const submit = document.getElementById("catalog-submit");
+    const render = (books) => {
+      results.replaceChildren();
+      if (!books.length) {
+        status.textContent = "Nenhum livro encontrado com esses filtros.";
+        return;
       }
+      status.textContent = `${books.length} livro(s) encontrado(s).`;
+      books.forEach((book) => {
+        const item = document.createElement("article");
+        item.className = "book-card";
+        const title = document.createElement("h2");
+        title.textContent = book.title || "Título não informado";
+        const details = document.createElement("p");
+        details.textContent = `${book.genre_name || "Gênero não informado"} · ${book.age_rating || "Classificação não informada"} · ${book.status || "Status não informado"}`;
+        const code = document.createElement("code");
+        code.textContent = book.code || "Código não informado";
+        item.append(title, details, code);
+        results.appendChild(item);
+      });
+    };
+    const loadGenres = async () => {
+      const genres = await client.listGenres();
+      genres.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = item.name;
+        genre.appendChild(option);
+      });
+    };
+    const search = async () => {
+      status.dataset.state = "loading";
+      status.textContent = "Consultando livros...";
+      submit.disabled = true;
+      try {
+        const data = Object.fromEntries(new FormData(form).entries());
+        render(await client.listBooks(data));
+      } catch (error) {
+        if (error.message !== "SESSION_INVALID") {
+          status.textContent = "Não foi possível consultar os livros. Tente novamente.";
+        }
+      } finally {
+        submit.disabled = false;
+        status.dataset.state = "";
+      }
+    };
+    const logout = document.getElementById("logout-link");
+    if (logout) {
+      logout.addEventListener("click", (event) => {
+        event.preventDefault();
+        client.clear();
+        location.replace(LOGIN_URL);
+      });
+    }
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      search();
+    });
+    if (!storage.getItem(TOKEN_KEY) || storage.getItem(PENDING_KEY) === "true") {
+      location.replace(storage.getItem(PENDING_KEY) === "true" ? `${CHANGE_URL}?next=catalog` : `${LOGIN_URL}?next=catalog`);
+      return;
+    }
+    Promise.all([loadGenres(), client.currentReader(), search()]).catch(() => {
+      if (storage.getItem(TOKEN_KEY)) status.textContent = "Não foi possível carregar o catálogo.";
     });
   }
 
@@ -213,6 +318,7 @@
     validateLogin,
     validatePasswordChange,
     createClient,
+    setupCatalog,
     storageKeys: Object.freeze({ token: TOKEN_KEY, reader: READER_KEY, pending: PENDING_KEY })
   });
   if (typeof module !== "undefined" && module.exports) module.exports = api;
@@ -230,4 +336,5 @@
   setupLogin(root.document, client, storage, root.location);
   setupPasswordChange(root.document, client, root.location);
   setupHome(root.document, client, storage, root.location);
+  setupCatalog(root.document, client, storage, root.location);
 })(globalThis);

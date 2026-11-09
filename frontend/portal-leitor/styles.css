@@ -1,7 +1,7 @@
 :root { color-scheme: light; font-family: Inter, "Segoe UI", Arial, sans-serif; color: #202a26; background: #f6f3ec; font-synthesis: none; }
 * { box-sizing: border-box; }
 body { min-width: 320px; min-height: 100vh; margin: 0; }
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 .page-shell { display: grid; min-height: 100vh; place-items: center; padding: 32px 20px; }
 .card { width: min(100%, 560px); padding: 40px; border: 1px solid #e6e2d9; border-radius: 20px; background: #fff; box-shadow: 0 20px 55px rgb(32 42 38 / 8%); }
 .eyebrow { margin: 0 0 8px; color: #1f5c4d; font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
@@ -10,8 +10,9 @@ h1 { margin: 0; color: #193d34; font-size: clamp(25px, 5vw, 32px); letter-spacin
 form { display: grid; gap: 16px; }
 .field { display: grid; gap: 7px; }
 label { color: #293831; font-size: 14px; font-weight: 650; }
-input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #cbd3ce; border-radius: 9px; color: #202a26; outline: none; }
-input:focus-visible { border-color: #1f5c4d; box-shadow: 0 0 0 3px rgb(31 92 77 / 18%); }
+input, select { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #cbd3ce; border-radius: 9px; background: #fff; color: #202a26; outline: none; }
+select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #1f5c4d 50%), linear-gradient(135deg, #1f5c4d 50%, transparent 50%); background-position: calc(100% - 17px) 20px, calc(100% - 12px) 20px; background-repeat: no-repeat; background-size: 5px 5px, 5px 5px; cursor: pointer; padding-right: 34px; }
+input:focus-visible, select:focus-visible { border-color: #1f5c4d; box-shadow: 0 0 0 3px rgb(31 92 77 / 18%); }
 .primary-button { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; padding: 0 18px; border: 1px solid #1f5c4d; border-radius: 9px; background: #1f5c4d; color: #fff; cursor: pointer; font-weight: 700; text-decoration: none; }
 .primary-button:disabled { cursor: wait; opacity: .7; }
 .field-error { min-height: 18px; margin: 0; color: #9a2e24; font-size: 13px; }
@@ -19,4 +20,12 @@ input:focus-visible { border-color: #1f5c4d; box-shadow: 0 0 0 3px rgb(31 92 77 
 .status[data-state="loading"] { color: #5c6862; }
 .links { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 24px; font-size: 14px; }
 .links a { color: #1f5c4d; font-weight: 650; }
+.home-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.secondary-button { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; padding: 0 18px; border: 1px solid #1f5c4d; border-radius: 9px; background: #fff; color: #1f5c4d; cursor: pointer; font-weight: 700; text-decoration: none; }
+.catalog-form { display: grid; gap: 16px; }
+.books-list { display: grid; gap: 12px; margin-top: 20px; }
+.book-card { padding: 18px; border: 1px solid #e6e2d9; border-radius: 12px; background: #fbfaf7; }
+.book-card h2 { margin: 0; color: #193d34; font-size: 19px; }
+.book-card p { margin: 8px 0; color: #5c6862; line-height: 1.45; }
+.book-card code { color: #1f5c4d; font-family: "JetBrains Mono", monospace; font-size: 13px; }
 @media (max-width: 640px) { .page-shell { padding: 18px 14px; } .card { padding: 28px 22px; border-radius: 16px; } }
