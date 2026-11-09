@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Menu | Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="../login/config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Menu principal da Biblioteca Comunitária">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span>Biblioteca Comunitária</span>
+      </a>
+      <div class="session-actions">
+        <span id="operator-label"></span>
+        <button id="logout-button" class="text-button" type="button">Encerrar sessão</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section id="loading-view" class="content-card" aria-labelledby="loading-title">
+        <h1 id="loading-title">Validando sua sessão</h1>
+        <p id="page-status" class="status" role="status" aria-live="polite">Aguarde enquanto confirmamos seu acesso.</p>
+        <button id="retry-button" class="primary-button" type="button" hidden>Tentar novamente</button>
+      </section>
+
+      <section id="menu-view" class="content-card" aria-labelledby="page-title" hidden>
+        <div class="page-heading">
+          <p class="eyebrow">Atendimento de balcão</p>
+          <h1 id="page-title">Menu principal</h1>
+          <p>Escolha uma área para continuar.</p>
+        </div>
+        <p id="menu-status" class="status" role="status" aria-live="polite"></p>
+        <div id="menu-content"></div>
+      </section>
+
+      <section id="placeholder-view" class="content-card placeholder-card" aria-labelledby="placeholder-title" hidden>
+        <p class="eyebrow">Funcionalidade futura</p>
+        <h1 id="placeholder-title"></h1>
+        <p id="placeholder-description"></p>
+        <p class="availability">Em breve — esta funcionalidade está em construção.</p>
+        <a class="primary-button" href="./index.html">Voltar ao menu principal</a>
+      </section>
+    </main>
+  </body>
+</html>

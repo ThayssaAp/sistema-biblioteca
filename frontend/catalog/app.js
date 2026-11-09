@@ -23,6 +23,19 @@
     return role === "ADMIN";
   }
 
+  function initialCatalogView(search, role) {
+    const requestedView = new URLSearchParams(search || "").get("view");
+    if (requestedView === "create-view" || requestedView === "search-view") {
+      return { viewId: requestedView, accessDenied: false };
+    }
+    if (requestedView === "genres-view") {
+      return canManageGenres(role)
+        ? { viewId: requestedView, accessDenied: false }
+        : { viewId: "search-view", accessDenied: true };
+    }
+    return { viewId: "search-view", accessDenied: false };
+  }
+
   function bookPayloadFromEntries(entries) {
     const book = Object.fromEntries(entries);
     book.title = book.title.trim();
@@ -137,6 +150,7 @@
     bookPayloadFromEntries,
     actionErrorMessage,
     canManageGenres,
+    initialCatalogView,
     storageKeys: Object.freeze({ token: TOKEN_KEY, operator: OPERATOR_KEY }),
     ageRatings: AGE_RATINGS,
     bookStatuses: BOOK_STATUSES
@@ -428,8 +442,11 @@
     try {
       await loadGenres();
       await loadBooks({});
-      showView("search-view");
-      setStatus("", "success");
+      const initialView = initialCatalogView(root.location.search, operator.role);
+      showView(initialView.viewId);
+      setStatus(initialView.accessDenied
+        ? "A gestão de gêneros está disponível somente para Admin."
+        : "", initialView.accessDenied ? "error" : "success");
     } catch {
       setStatus("Não foi possível carregar o acervo. Tente novamente.");
     }

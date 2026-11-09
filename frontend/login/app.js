@@ -3,6 +3,11 @@
 
   const TOKEN_KEY = "biblioteca.authToken";
   const OPERATOR_KEY = "biblioteca.operator";
+  const MENU_URL = "../menu/index.html";
+
+  function redirectToMenu(location) {
+    location.replace(MENU_URL);
+  }
 
   function createAuthClient(config, fetchImplementation) {
     const baseUrl = typeof config?.apiBaseUrl === "string"
@@ -84,6 +89,7 @@
     createAuthClient,
     storeSession,
     clearSession,
+    redirectToMenu,
     storageKeys: Object.freeze({ token: TOKEN_KEY, operator: OPERATOR_KEY })
   });
 
@@ -105,10 +111,6 @@
   const status = root.document.getElementById("login-status");
   const submitButton = root.document.getElementById("submit-button");
   const buttonLabel = root.document.getElementById("button-label");
-  const sessionPanel = root.document.getElementById("session-panel");
-  const operatorName = root.document.getElementById("operator-name");
-  const operatorRole = root.document.getElementById("operator-role");
-  const logoutButton = root.document.getElementById("logout-button");
   const storage = root.sessionStorage;
 
   let authClient;
@@ -121,18 +123,12 @@
   }
 
   function showAuthenticated(operator) {
-    form.hidden = true;
-    sessionPanel.hidden = false;
-    operatorName.textContent = operator.name;
-    operatorRole.textContent = operator.role === "ADMIN" ? "Administrador" : "Funcionário";
-    setStatus("Autenticação realizada com sucesso.", "success");
+    storage.setItem(OPERATOR_KEY, JSON.stringify(operator));
+    redirectToMenu(root.location);
   }
 
   function showLogin() {
-    sessionPanel.hidden = true;
     form.hidden = false;
-    operatorName.textContent = "";
-    operatorRole.textContent = "";
     passwordInput.value = "";
   }
 
@@ -175,19 +171,11 @@
     }
   });
 
-  logoutButton.addEventListener("click", () => {
-    clearSession(storage);
-    showLogin();
-    setStatus("Sessão encerrada.", "success");
-    matriculaInput.focus();
-  });
-
   const savedToken = storage.getItem(TOKEN_KEY);
   if (savedToken) {
     setStatus("Verificando sua sessão...", "success");
     authClient.currentOperator(savedToken)
       .then((operator) => {
-        storage.setItem(OPERATOR_KEY, JSON.stringify(operator));
         showAuthenticated(operator);
       })
       .catch(() => {

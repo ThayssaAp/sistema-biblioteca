@@ -6,6 +6,7 @@ const {
   createAuthClient,
   storeSession,
   clearSession,
+  redirectToMenu,
   storageKeys
 } = require("./app.js");
 
@@ -107,4 +108,10 @@ test("session storage contains token and public operator only and clears both", 
 
   clearSession(storage);
   assert.equal(values.size, 0);
+});
+
+test("authenticated operators are sent to the central menu", () => {
+  let destination;
+  redirectToMenu({ replace: (url) => { destination = url; } });
+  assert.equal(destination, "../menu/index.html");
 });

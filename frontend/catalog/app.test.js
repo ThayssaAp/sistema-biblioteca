@@ -9,6 +9,7 @@ const {
   bookPayloadFromEntries,
   actionErrorMessage,
   canManageGenres,
+  initialCatalogView,
   storageKeys,
   ageRatings,
   bookStatuses
@@ -180,6 +181,7 @@ test("book form exposes native validation and accessible labels", () => {
   assert.match(html, /id="filter-title"[^>]*type="search"/);
   assert.match(html, /id="filter-genre"[^>]*name="genre_id"/);
   assert.match(html, /id="filter-status"[^>]*name="status"/);
+  assert.match(html, /href="\.\.\/menu\/index\.html">Menu principal/);
 });
 
 test("catalog results use text rendering and a narrow-screen scroll container", () => {
@@ -268,6 +270,29 @@ test("genre management is restricted to administrators", () => {
   assert.equal(canManageGenres("ADMIN"), true);
   assert.equal(canManageGenres("FUNCIONARIO"), false);
   assert.equal(canManageGenres(undefined), false);
+});
+
+test("catalog opens the requested task and protects the genres view by role", () => {
+  assert.deepEqual(initialCatalogView("?view=create-view", "FUNCIONARIO"), {
+    viewId: "create-view",
+    accessDenied: false
+  });
+  assert.deepEqual(initialCatalogView("?view=search-view", "ADMIN"), {
+    viewId: "search-view",
+    accessDenied: false
+  });
+  assert.deepEqual(initialCatalogView("?view=genres-view", "ADMIN"), {
+    viewId: "genres-view",
+    accessDenied: false
+  });
+  assert.deepEqual(initialCatalogView("?view=genres-view", "FUNCIONARIO"), {
+    viewId: "search-view",
+    accessDenied: true
+  });
+  assert.deepEqual(initialCatalogView("?view=unknown", "ADMIN"), {
+    viewId: "search-view",
+    accessDenied: false
+  });
 });
 
 test("catalog client identifies an expired authentication session", async () => {
