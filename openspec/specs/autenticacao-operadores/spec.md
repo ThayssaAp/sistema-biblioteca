@@ -84,11 +84,11 @@ O backend SHALL desativar as rotas de demonstração de criação de conta e alt
 - **THEN** o backend rejeita a operação sem alterar o perfil de qualquer operador
 
 ### Requirement: Tela de login permite entrar no sistema
-A interface SHALL fornecer uma tela de login em HTML, CSS e JavaScript puro com campos de matrícula e senha, enviando as credenciais à API de autenticação e mostrando o resultado de forma acessível.
+A interface SHALL fornecer uma tela de login em HTML, CSS e JavaScript puro com campos de matrícula e senha, enviando as credenciais à API de autenticação e mostrando o resultado de forma acessível. Após autenticação válida, SHALL apresentar o menu correspondente ao perfil retornado pelo backend sem exigir nova autenticação.
 
 #### Scenario: Login aceito pela API
 - **WHEN** o operador preenche matrícula e senha válidas e envia o formulário
-- **THEN** a interface apresenta o estado autenticado e disponibiliza a identidade e o perfil retornados pela API para o fluxo da aplicação
+- **THEN** a interface apresenta o menu adequado ao perfil e disponibiliza a identidade e o perfil retornados pela API para o fluxo da aplicação
 
 #### Scenario: Login rejeitado pela API
 - **WHEN** a API rejeita as credenciais

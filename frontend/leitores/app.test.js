@@ -2,6 +2,8 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
 const {
   isValidCpf,
   normalizeCpf,
@@ -115,4 +117,15 @@ test("cliente encerra sessão e redireciona quando o token expira", async () => 
   assert.equal(redirected, true);
   assert.equal(storage.getItem("biblioteca.authToken"), null);
   assert.equal(storage.getItem("biblioteca.operator"), null);
+});
+
+test("reader screens return to the authenticated menu and retain session guards", () => {
+  const registrationHtml = readFileSync(path.join(__dirname, "cadastro.html"), "utf8");
+  const consultationHtml = readFileSync(path.join(__dirname, "consulta.html"), "utf8");
+  const app = readFileSync(path.join(__dirname, "app.js"), "utf8");
+
+  assert.match(registrationHtml, /href="\.\.\/menu\/index\.html">Menu principal/);
+  assert.match(consultationHtml, /href="\.\.\/menu\/index\.html">Menu principal/);
+  assert.match(app, /if \(!root\.sessionStorage\.getItem\(TOKEN_KEY\)\)/);
+  assert.match(app, /root\.location\.href = LOGIN_URL/);
 });
