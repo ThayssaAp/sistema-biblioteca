@@ -34,14 +34,12 @@
         {
           title: "Empréstimos",
           description: "Registro e acompanhamento de empréstimos.",
-          view: "loans",
-          comingSoon: true
+          href: "../emprestimos/index.html?view=loans"
         },
         {
           title: "Multas",
           description: "Consulta e acompanhamento de multas.",
-          view: "fines",
-          comingSoon: true
+          href: "../emprestimos/index.html?view=fines"
         }
       ]
     },
@@ -71,16 +69,6 @@
   ]);
 
   const PLACEHOLDERS = Object.freeze({
-    loans: {
-      title: "Empréstimos",
-      description: "As operações de empréstimo serão disponibilizadas em uma próxima etapa.",
-      roles: ["FUNCIONARIO", "ADMIN"]
-    },
-    fines: {
-      title: "Multas",
-      description: "A consulta e o gerenciamento de multas serão disponibilizados em uma próxima etapa.",
-      roles: ["FUNCIONARIO", "ADMIN"]
-    },
     "book-deletion": {
       title: "Exclusão de livro",
       description: "A exclusão administrativa de exemplares será disponibilizada em uma próxima etapa.",

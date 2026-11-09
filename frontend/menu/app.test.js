@@ -70,7 +70,8 @@ test("employee menu includes shared tasks without administrator or reader portal
   assert.equal(items.find((item) => item.title === "Consultar livros").href, "../catalog/index.html?view=search-view");
   assert.equal(items.find((item) => item.title === "Cadastrar leitor").href, "../leitores/cadastro.html");
   assert.equal(items.find((item) => item.title === "Consultar leitores").href, "../leitores/consulta.html");
-  assert.equal(items.find((item) => item.title === "Empréstimos").href, "./index.html?view=loans");
+  assert.equal(items.find((item) => item.title === "Empréstimos").href, "../emprestimos/index.html?view=loans");
+  assert.equal(items.find((item) => item.title === "Multas").href, "../emprestimos/index.html?view=fines");
 });
 
 test("admin menu includes shared tasks and exclusive administrator options", () => {
@@ -90,13 +91,7 @@ test("admin menu includes shared tasks and exclusive administrator options", () 
   assert.equal(adminItems.find((item) => item.title === "Dashboard").href, "./index.html?view=dashboard");
 });
 
-test("placeholder routes return no business action and enforce administrator access", () => {
-  assert.deepEqual(resolveMenuView("loans", "FUNCIONARIO"), {
-    type: "placeholder",
-    title: "Empréstimos",
-    description: "As operações de empréstimo serão disponibilizadas em uma próxima etapa.",
-    roles: ["FUNCIONARIO", "ADMIN"]
-  });
+test("placeholder routes enforce administrator access", () => {
   assert.equal(resolveMenuView("dashboard", "FUNCIONARIO").type, "menu");
   assert.match(resolveMenuView("dashboard", "FUNCIONARIO").message, /somente para Admin/);
   assert.equal(resolveMenuView("dashboard", "ADMIN").type, "placeholder");
@@ -104,10 +99,8 @@ test("placeholder routes return no business action and enforce administrator acc
   assert.match(resolveMenuView("reader-portal", "ADMIN").message, /não está disponível/);
 });
 
-test("all future tasks have informational placeholders and a return path", () => {
+test("remaining future tasks have informational placeholders and a return path", () => {
   const expected = {
-    loans: "Empréstimos",
-    fines: "Multas",
     "book-deletion": "Exclusão de livro",
     dashboard: "Dashboard"
   };

@@ -22,7 +22,7 @@ A interface SHALL apresentar um menu central após validar a sessão do operador
 - **THEN** a interface não exibe seu conteúdo e o encaminha para autenticação
 
 ### Requirement: Menu principal preserva tarefas de atendimento
-A interface SHALL agrupar no menu principal as tarefas disponíveis para Funcionário e Admin, preservando o acesso às telas funcionais existentes de livros e leitores.
+A interface SHALL agrupar no menu principal as tarefas disponíveis para Funcionário e Admin, preservando o acesso às telas funcionais existentes de livros, leitores, empréstimos e multas.
 
 #### Scenario: Acesso a livros existentes
 - **WHEN** um Funcionário ou Admin seleciona cadastro ou consulta de livros
@@ -35,6 +35,10 @@ A interface SHALL agrupar no menu principal as tarefas disponíveis para Funcion
 #### Scenario: Empréstimos e multas ainda indisponíveis
 - **WHEN** um operador seleciona empréstimos ou multas antes da implementação dessas funcionalidades
 - **THEN** a interface apresenta uma tela identificada como “Em breve” e não simula nem envia operações ao backend
+
+#### Scenario: Empréstimos e multas disponíveis
+- **WHEN** um operador seleciona empréstimos ou multas após a implementação dessas funcionalidades
+- **THEN** a interface abre os fluxos funcionais de balcão para criar, consultar, renovar, devolver empréstimos e visualizar multas
 
 ### Requirement: Área administrativa é exclusiva de Admin
 A interface SHALL exibir a área administrativa somente para `ADMIN`, preservando a gestão funcional de gêneros e identificando como “Em breve” as operações administrativas ainda não implementadas.
