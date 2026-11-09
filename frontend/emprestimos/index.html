@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Empréstimos e multas | Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="../login/config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../menu/index.html">Biblioteca Comunitária</a>
+      <div class="session-actions">
+        <span id="operator-label"></span>
+        <button id="logout-button" class="text-button" type="button">Encerrar sessão</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="content-card" aria-labelledby="page-title">
+        <p class="eyebrow">Atendimento de balcão</p>
+        <h1 id="page-title">Empréstimos e multas</h1>
+        <p class="intro">Registre operações, acompanhe prazos e consulte pendências sem sair desta tela.</p>
+        <nav class="tabs" aria-label="Operações">
+          <a id="loans-tab" href="?view=loans">Empréstimos</a>
+          <a id="fines-tab" href="?view=fines">Multas</a>
+        </nav>
+        <p id="page-status" class="status" role="status" aria-live="polite"></p>
+
+        <section id="loans-view" class="task-view" aria-labelledby="loans-title">
+          <h2 id="loans-title">Novo empréstimo</h2>
+          <form id="loan-form" class="form-grid">
+            <label>Leitor <input name="reader_id" type="number" min="1" required></label>
+            <label>Exemplar <input name="book_id" type="number" min="1" required></label>
+            <button class="primary-button" type="submit">Registrar empréstimo</button>
+          </form>
+
+          <div class="section-heading">
+            <h2>Consultar empréstimos</h2>
+            <button id="refresh-loans" class="secondary-button" type="button">Atualizar</button>
+          </div>
+          <form id="loan-search" class="filter-grid">
+            <label>Código <input name="code" placeholder="#EMP000000"></label>
+            <label>Leitor <input name="reader_id" type="number" min="1"></label>
+            <label>Status
+              <select name="status"><option value="">Todos</option><option>Ativo</option><option>Devolvido</option></select>
+            </label>
+            <button class="secondary-button" type="submit">Pesquisar</button>
+          </form>
+          <div id="loans-list" class="results" aria-live="polite"></div>
+        </section>
+
+        <section id="fines-view" class="task-view" aria-labelledby="fines-title" hidden>
+          <div class="section-heading">
+            <h2 id="fines-title">Multas registradas</h2>
+            <button id="refresh-fines" class="secondary-button" type="button">Atualizar</button>
+          </div>
+          <form id="fine-search" class="filter-grid">
+            <label>Leitor <input name="reader_id" type="number" min="1"></label>
+            <label>Status
+              <select name="status"><option value="">Todos</option><option>Pendente</option><option>Paga</option><option>Abonada</option><option>Zerada</option></select>
+            </label>
+            <button class="secondary-button" type="submit">Pesquisar</button>
+          </form>
+          <div id="fines-list" class="results" aria-live="polite"></div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
