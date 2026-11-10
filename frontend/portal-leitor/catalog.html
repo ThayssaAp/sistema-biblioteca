@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Consultar livros | Portal do Leitor</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="card wide" aria-labelledby="page-title">
+        <p class="eyebrow">Portal do Leitor</p>
+        <h1 id="page-title">Consultar livros</h1>
+        <p class="intro">Use os filtros para localizar livros e verificar se estão disponíveis.</p>
+        <form id="catalog-form" class="catalog-form">
+          <div class="field"><label for="title">Título</label><input id="title" name="title" autocomplete="off"></div>
+          <div class="field"><label for="genre_id">Gênero</label><select id="genre_id" name="genre_id"><option value="">Todos os gêneros</option></select></div>
+          <div class="field"><label for="status">Disponibilidade</label><select id="status" name="status"><option value="">Todos</option><option value="Disponível">Disponível</option><option value="Emprestado">Emprestado</option></select></div>
+          <div class="field"><label for="age_rating">Classificação etária</label><select id="age_rating" name="age_rating"><option value="">Todas</option><option value="Livre">Livre</option><option value="10+">10+</option><option value="12+">12+</option><option value="14+">14+</option><option value="16+">16+</option><option value="18+">18+</option><option value="Não informada">Não informada</option></select></div>
+          <button id="catalog-submit" class="primary-button" type="submit">Consultar</button>
+        </form>
+        <p id="catalog-status" class="status" role="status" aria-live="polite">Carregando catálogo...</p>
+        <section id="books-list" class="books-list" aria-live="polite" aria-label="Resultados dos livros"></section>
+        <nav class="links" aria-label="Navegação do Portal"><a href="./home.html">Início</a><a id="logout-link" href="./index.html">Sair</a></nav>
+      </section>
+    </main>
+  </body>
+</html>

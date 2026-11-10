@@ -11,6 +11,10 @@ Base publicada:
 
 `https://x8ki-letl-twmt.n7.xano.io`
 
+Os artefatos locais do backend Xano ficam exclusivamente em `xano/`. Os
+timestamps de empréstimos são tratados em milissegundos e os valores de multa
+são persistidos em centavos.
+
 Os grupos abaixo são identificados pelos caminhos canônicos atuais do Xano:
 
 - Empréstimos: `api:zM8VQEDN`
@@ -157,7 +161,9 @@ Campos operacionais principais:
 - `status`: `Pendente`, `Paga`, `Abonada` ou `Zerada`.
 
 O índice único por `loan_id` impede a criação de uma segunda multa para a mesma
-devolução.
+devolução. O cálculo usa `1000` centavos por dia de atraso (`R$ 10,00`) e a
+diferença entre timestamps em milissegundos, arredondada para cima por dia
+corrido iniciado.
 
 ## Validação
 

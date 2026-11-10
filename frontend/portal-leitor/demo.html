@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Demo atualizada | Portal do Leitor</title>
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+      .demo-badge { display: inline-flex; margin: 0 0 14px; padding: 5px 9px; border-radius: 999px; background: #e7f2ed; color: #1f5c4d; font-size: 12px; font-weight: 700; }
+      .demo-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+      .demo-actions button { min-height: 42px; padding: 0 14px; border: 1px solid #1f5c4d; border-radius: 9px; background: #fff; color: #1f5c4d; cursor: pointer; font-weight: 700; }
+      .demo-actions button:hover, .demo-actions button:focus-visible { background: #eef6f2; }
+      .demo-note { margin-top: 20px; padding: 12px 14px; border-left: 4px solid #1f5c4d; background: #f6f3ec; color: #5c6862; font-size: 14px; line-height: 1.5; }
+      .demo-hidden { display: none; }
+    </style>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="card" aria-labelledby="page-title">
+        <span class="demo-badge">DEMO VISUAL — sem conexão com a API</span>
+
+        <div id="login-view">
+          <p class="eyebrow">Portal do Leitor</p>
+          <h1 id="page-title">Acesse sua biblioteca</h1>
+          <p class="intro">Use seu CPF e senha. No primeiro acesso, utilize a senha temporária fornecida pela biblioteca.</p>
+          <form id="login-form" novalidate>
+            <div class="field">
+              <label for="cpf">CPF</label>
+              <input id="cpf" inputmode="numeric" autocomplete="username" placeholder="000.000.000-00" required autofocus>
+              <p id="cpf-error" class="field-error" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="password">Senha</label>
+              <input id="password" type="password" autocomplete="current-password" required>
+              <p id="password-error" class="field-error" aria-live="polite"></p>
+            </div>
+            <button class="primary-button" type="submit">Entrar</button>
+            <p id="login-status" class="status" role="status" aria-live="polite"></p>
+          </form>
+          <p class="demo-note">Teste o primeiro acesso com qualquer CPF válido e a senha temporária <strong>Temp1234</strong>.</p>
+        </div>
+
+        <div id="change-view" class="demo-hidden">
+          <p class="eyebrow">Primeiro acesso</p>
+          <h1>Crie sua senha</h1>
+          <p class="intro">A senha temporária não pode ser usada para acessar o portal. Defina uma senha com pelo menos 8 caracteres, uma letra e um dígito.</p>
+          <form id="change-form" novalidate>
+            <div class="field">
+              <label for="new-password">Nova senha</label>
+              <input id="new-password" type="password" autocomplete="new-password" required>
+              <p id="new-password-error" class="field-error" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="password-confirmation">Confirme a nova senha</label>
+              <input id="password-confirmation" type="password" autocomplete="new-password" required>
+              <p id="password-confirmation-error" class="field-error" aria-live="polite"></p>
+            </div>
+            <button class="primary-button" type="submit">Salvar senha</button>
+            <p id="change-status" class="status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div id="home-view" class="demo-hidden">
+          <p class="eyebrow">Portal do Leitor</p>
+          <h1>Acesso confirmado</h1>
+          <p class="intro">Olá, leitor! Sua sessão está ativa e esta é a área inicial do portal.</p>
+          <div class="demo-note">A consulta de livros será adicionada na próxima change.</div>
+          <div class="demo-actions">
+            <button id="logout-button" type="button">Sair</button>
+            <button id="restart-button" type="button">Testar primeiro acesso novamente</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const validCpf = (value) => value.replace(/\D/g, "").length === 11;
+        const validPassword = (value) => value.length >= 8 && /[A-Za-z]/.test(value) && /[0-9]/.test(value);
+        const views = {
+          login: document.getElementById("login-view"),
+          change: document.getElementById("change-view"),
+          home: document.getElementById("home-view")
+        };
+        const show = (name) => {
+          Object.entries(views).forEach(([key, element]) => element.classList.toggle("demo-hidden", key !== name));
+          const firstInput = views[name].querySelector("input");
+          if (firstInput) firstInput.focus();
+        };
+        const clearErrors = (ids) => ids.forEach((id) => { document.getElementById(id).textContent = ""; });
+        const formatCpf = (value) => value.replace(/\D/g, "").slice(0, 11)
+          .replace(/^(\d{3})(\d)/, "$1.$2")
+          .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+          .replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
+
+        document.getElementById("cpf").addEventListener("input", (event) => {
+          event.target.value = formatCpf(event.target.value);
+        });
+
+        document.getElementById("login-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          clearErrors(["cpf-error", "password-error"]);
+          const cpf = document.getElementById("cpf").value;
+          const password = document.getElementById("password").value;
+          const status = document.getElementById("login-status");
+          if (!validCpf(cpf)) {
+            document.getElementById("cpf-error").textContent = "Informe um CPF com 11 dígitos.";
+            document.getElementById("cpf").focus();
+            return;
+          }
+          if (password !== "Temp1234") {
+            status.textContent = "Não foi possível entrar. Confira suas credenciais e tente novamente.";
+            document.getElementById("password").focus();
+            return;
+          }
+          status.textContent = "";
+          show("change");
+        });
+
+        document.getElementById("change-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          clearErrors(["new-password-error", "password-confirmation-error"]);
+          const password = document.getElementById("new-password").value;
+          const confirmation = document.getElementById("password-confirmation").value;
+          if (!validPassword(password)) {
+            document.getElementById("new-password-error").textContent = "Use ao menos 8 caracteres, uma letra e um dígito.";
+            document.getElementById("new-password").focus();
+            return;
+          }
+          if (password !== confirmation) {
+            document.getElementById("password-confirmation-error").textContent = "As senhas não conferem.";
+            document.getElementById("password-confirmation").focus();
+            return;
+          }
+          if (password === "Temp1234") {
+            document.getElementById("new-password-error").textContent = "A nova senha deve ser diferente da senha temporária.";
+            document.getElementById("new-password").focus();
+            return;
+          }
+          show("home");
+        });
+
+        document.getElementById("logout-button").addEventListener("click", () => {
+          document.getElementById("password").value = "";
+          show("login");
+        });
+        document.getElementById("restart-button").addEventListener("click", () => show("login"));
+      })();
+    </script>
+  </body>
+</html>

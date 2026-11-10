@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Portal do Leitor | Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="card" aria-labelledby="page-title">
+        <p class="eyebrow">Portal do Leitor</p>
+        <h1 id="page-title">Acesse sua biblioteca</h1>
+        <p class="intro">Use seu CPF e senha. No primeiro acesso, utilize a senha temporária fornecida pela biblioteca.</p>
+        <form id="reader-login-form" novalidate>
+          <div class="field"><label for="cpf">CPF</label><input id="cpf" name="cpf" inputmode="numeric" autocomplete="username" required autofocus><p id="cpf-error" class="field-error" aria-live="polite"></p></div>
+          <div class="field"><label for="password">Senha</label><input id="password" name="password" type="password" autocomplete="current-password" required><p id="password-error" class="field-error" aria-live="polite"></p></div>
+          <button id="submit-button" class="primary-button" type="submit">Entrar</button>
+          <p id="form-status" class="status" role="status" aria-live="polite"></p>
+        </form>
+        <nav class="links" aria-label="Navegação"><a href="../">Voltar para seleção de acesso</a></nav>
+      </section>
+    </main>
+  </body>
+</html>

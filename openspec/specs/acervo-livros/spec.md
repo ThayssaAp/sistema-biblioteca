@@ -57,7 +57,7 @@ O sistema SHALL atribuir a cada exemplar um código único no formato `#ADS0000`
 - **THEN** o sistema não atribui esse código a outro exemplar
 
 ### Requirement: Operadores autenticados podem consultar e pesquisar o acervo
-O sistema SHALL permitir que operadores autenticados consultem exemplares e filtrem os resultados por código, título, gênero e status.
+O sistema SHALL permitir que operadores autenticados consultem exemplares e filtrem os resultados por código, título, gênero e status, e SHALL permitir que leitores autenticados consultem os dados públicos dos exemplares por título, gênero, status e faixa etária.
 
 #### Scenario: Consulta do acervo
 - **WHEN** um operador autenticado consulta o acervo sem filtros
@@ -67,8 +67,12 @@ O sistema SHALL permitir que operadores autenticados consultem exemplares e filt
 - **WHEN** o operador pesquisa o acervo usando um ou mais filtros suportados
 - **THEN** o sistema retorna somente exemplares que correspondem aos filtros informados
 
+#### Scenario: Consulta do leitor com filtros públicos
+- **WHEN** um leitor autenticado pesquisa por título, gênero, status ou faixa etária
+- **THEN** o sistema retorna somente exemplares correspondentes, sem exigir sessão de operador
+
 #### Scenario: Consulta sem autenticação
-- **WHEN** uma requisição de consulta não apresenta credencial válida
+- **WHEN** uma requisição de consulta não apresenta credencial válida de operador ou sessão válida de leitor
 - **THEN** o sistema rejeita o acesso e não retorna exemplares
 
 ### Requirement: Interface do acervo permite cadastrar e consultar exemplares

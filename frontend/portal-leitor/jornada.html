@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Jornada integrada | Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+      .journey-badge { display: inline-flex; margin-bottom: 14px; padding: 5px 9px; border-radius: 999px; background: #e7f2ed; color: #1f5c4d; font-size: 12px; font-weight: 700; }
+      .journey-step { margin-top: 24px; padding-top: 24px; border-top: 1px solid #e6e2d9; }
+      .journey-step h2 { margin: 0 0 8px; color: #193d34; font-size: 20px; }
+      .journey-step[hidden] { display: none; }
+      .journey-note { margin: 12px 0 20px; color: #5c6862; font-size: 14px; line-height: 1.5; }
+      .journey-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+      .journey-actions .secondary-button { border: 0; }
+      .journey-results { display: grid; gap: 12px; margin-top: 18px; }
+      .journey-results:empty { display: none; }
+      .journey-summary { padding: 12px 14px; border-left: 4px solid #1f5c4d; background: #f6f3ec; color: #5c6862; line-height: 1.5; }
+      .journey-log { margin-top: 18px; color: #5c6862; font-size: 13px; }
+      .journey-log strong { color: #1f5c4d; }
+    </style>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="card wide" aria-labelledby="page-title">
+        <span class="journey-badge">JORNADA REAL — grava no Xano</span>
+        <p class="eyebrow">Teste integrado</p>
+        <h1 id="page-title">Criar leitor e consultar acervo</h1>
+        <p class="intro">Entre como operador, cadastre um leitor e conclua o primeiro acesso usando as APIs reais da biblioteca.</p>
+
+        <section id="operator-step" class="journey-step" aria-labelledby="operator-title">
+          <h2 id="operator-title">1. Acesso do operador</h2>
+          <p class="journey-note">O cadastro de leitor exige uma sessão de operador com perfil Funcionário ou Admin.</p>
+          <form id="operator-form">
+            <div class="field"><label for="operator-registration">Matrícula</label><input id="operator-registration" name="matricula" autocomplete="username" required></div>
+            <div class="field"><label for="operator-password">Senha</label><input id="operator-password" name="password" type="password" autocomplete="current-password" required></div>
+            <button id="operator-submit" class="primary-button" type="submit">Entrar como operador</button>
+          </form>
+          <p id="operator-status" class="status" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="reader-create-step" class="journey-step" aria-labelledby="reader-create-title" hidden>
+          <h2 id="reader-create-title">2. Cadastro do leitor</h2>
+          <p class="journey-note">Esses dados serão gravados na tabela de leitores do Xano. Use um CPF ainda não cadastrado.</p>
+          <form id="reader-create-form">
+            <div class="field"><label for="reader-cpf">CPF</label><input id="reader-cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required></div>
+            <div class="field"><label for="reader-name">Nome completo</label><input id="reader-name" name="name" required></div>
+            <div class="field"><label for="reader-birth-date">Data de nascimento</label><input id="reader-birth-date" name="birth_date" type="date" required></div>
+            <div class="field"><label for="reader-address">Endereço</label><input id="reader-address" name="address" required></div>
+            <div class="field"><label for="reader-phone">Telefone</label><input id="reader-phone" name="phone" inputmode="tel" required></div>
+            <div class="field"><label for="reader-email">E-mail <span>(opcional)</span></label><input id="reader-email" name="email" type="email" autocomplete="email"></div>
+            <div class="field"><label for="temporary-password">Senha temporária</label><input id="temporary-password" name="temporary_password" type="password" value="Temp1234" minlength="8" required><p class="journey-note">A senha precisa ter ao menos 8 caracteres, uma letra e um dígito.</p></div>
+            <button id="reader-create-submit" class="primary-button" type="submit">Gravar leitor no Xano</button>
+          </form>
+          <p id="reader-create-status" class="status" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="reader-login-step" class="journey-step" aria-labelledby="reader-login-title" hidden>
+          <h2 id="reader-login-title">3. Login do leitor</h2>
+          <p class="journey-note">O cadastro foi concluído. Entre usando o CPF cadastrado e a senha temporária.</p>
+          <form id="reader-login-form">
+            <div class="field"><label for="login-cpf">CPF</label><input id="login-cpf" name="cpf" required></div>
+            <div class="field"><label for="login-password">Senha temporária</label><input id="login-password" name="password" type="password" required></div>
+            <button id="reader-login-submit" class="primary-button" type="submit">Entrar como leitor</button>
+          </form>
+          <p id="reader-login-status" class="status" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="password-step" class="journey-step" aria-labelledby="password-title" hidden>
+          <h2 id="password-title">4. Defina sua senha</h2>
+          <p class="journey-note">Por segurança, a senha nova deve ser diferente da senha temporária.</p>
+          <form id="password-form">
+            <div class="field"><label for="new-password">Nova senha</label><input id="new-password" name="new_password" type="password" minlength="8" required></div>
+            <div class="field"><label for="password-confirmation">Confirme a nova senha</label><input id="password-confirmation" name="password_confirmation" type="password" minlength="8" required></div>
+            <button id="password-submit" class="primary-button" type="submit">Salvar senha no Xano</button>
+          </form>
+          <p id="password-status" class="status" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="catalog-step" class="journey-step" aria-labelledby="catalog-title" hidden>
+          <h2 id="catalog-title">5. Consulta de livros</h2>
+          <p class="journey-note">Esta consulta usa o token restrito do leitor e não altera o acervo.</p>
+          <form id="catalog-form" class="catalog-form">
+            <div class="field"><label for="catalog-title-filter">Título</label><input id="catalog-title-filter" name="title"></div>
+            <div class="field"><label for="catalog-status-filter">Disponibilidade</label><select id="catalog-status-filter" name="status"><option value="">Todos</option><option>Disponível</option><option>Emprestado</option></select></div>
+            <div class="field"><label for="catalog-age-filter">Classificação etária</label><select id="catalog-age-filter" name="age_rating"><option value="">Todas</option><option>Livre</option><option>10+</option><option>12+</option><option>14+</option><option>16+</option><option>18+</option><option>Não informada</option></select></div>
+            <button id="catalog-submit" class="primary-button" type="submit">Consultar livros</button>
+          </form>
+          <p id="catalog-status" class="status" role="status" aria-live="polite"></p>
+          <section id="catalog-results" class="journey-results" aria-live="polite" aria-label="Livros encontrados"></section>
+        </section>
+
+        <p id="journey-log" class="journey-log" role="status" aria-live="polite"><strong>Status:</strong> aguardando login do operador.</p>
+      </section>
+    </main>
+    <script>
+      (() => {
+        const operatorApi = "https://x8ki-letl-twmt.n7.xano.io/api:36IocL78";
+        const readersApi = "https://x8ki-letl-twmt.n7.xano.io/api:leitores";
+        const operatorKey = "biblioteca.authToken";
+        const readerKey = "biblioteca.readerAuthToken";
+        const steps = ["operator-step", "reader-create-step", "reader-login-step", "password-step", "catalog-step"];
+        const $ = (id) => document.getElementById(id);
+        const state = { temporaryPassword: "" };
+        const setStep = (active) => steps.forEach((id) => { $(id).hidden = id !== active; });
+        const log = (message) => { $("journey-log").innerHTML = `<strong>Status:</strong> ${message}`; };
+        const json = async (response) => {
+          const body = await response.json().catch(() => ({}));
+          if (response.status === 404 || body.code === "ERROR_CODE_NOT_FOUND") {
+            throw new Error("Endpoint ainda não publicado no grupo Leitores do Xano. Publique auth/login, auth/change-password, auth/me, books e genres.");
+          }
+          if (!response.ok) throw new Error(body.message || body.error || "Não foi possível concluir a operação.");
+          return body;
+        };
+        const authHeaders = (token) => ({ Accept: "application/json", Authorization: `Bearer ${token}` });
+        const normalizeCpf = (value) => String(value || "").replace(/\D/g, "");
+        const showError = (id, error) => { $(id).textContent = error.message; };
+        const renderBooks = (books) => {
+          const target = $("catalog-results");
+          target.replaceChildren();
+          if (!books.length) { $("catalog-status").textContent = "Nenhum livro encontrado com esses filtros."; return; }
+          $("catalog-status").textContent = `${books.length} livro(s) encontrado(s).`;
+          books.forEach((book) => {
+            const card = document.createElement("article");
+            card.className = "book-card";
+            const title = document.createElement("h3");
+            title.textContent = book.title || "Título não informado";
+            const details = document.createElement("p");
+            details.textContent = `${book.genre_name || "Gênero não informado"} · ${book.age_rating || "Classificação não informada"} · ${book.status || "Status não informado"}`;
+            const code = document.createElement("code");
+            code.textContent = book.code || "Código não informado";
+            card.append(title, details, code);
+            target.append(card);
+          });
+        };
+        $("operator-form").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const status = $("operator-status");
+          status.textContent = "Autenticando operador...";
+          try {
+            const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+            const result = await json(await fetch(`${operatorApi}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(data) }));
+            sessionStorage.setItem(operatorKey, result.authToken);
+            $("reader-create-step").hidden = false;
+            log("operador autenticado; preencha o cadastro do leitor.");
+            status.textContent = "Operador autenticado.";
+          } catch (error) { showError("operator-status", error); }
+        });
+        $("reader-create-form").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const status = $("reader-create-status");
+          status.textContent = "Gravando leitor no Xano...";
+          try {
+            const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+            data.cpf = normalizeCpf(data.cpf);
+            const result = await json(await fetch(`${readersApi}/leitores`, { method: "POST", headers: { ...authHeaders(sessionStorage.getItem(operatorKey)), "Content-Type": "application/json" }, body: JSON.stringify(data) }));
+            state.temporaryPassword = data.temporary_password;
+            $("login-cpf").value = result.cpf;
+            sessionStorage.removeItem(operatorKey);
+            $("reader-login-step").hidden = false;
+            status.textContent = `Leitor ${result.name} gravado com sucesso.`;
+            log("leitor gravado; faça o primeiro login.");
+          } catch (error) { showError("reader-create-status", error); }
+        });
+        $("reader-login-form").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const status = $("reader-login-status");
+          status.textContent = "Autenticando leitor...";
+          try {
+            const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+            const result = await json(await fetch(`${readersApi}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ cpf: normalizeCpf(data.cpf), password: data.password }) }));
+            sessionStorage.setItem(readerKey, result.authToken);
+            if (result.requiresPasswordChange) { $("password-step").hidden = false; log("primeiro acesso confirmado; defina a senha do leitor."); }
+            else { $("catalog-step").hidden = false; log("leitor autenticado; consulte o acervo."); }
+            status.textContent = "Leitor autenticado.";
+          } catch (error) { showError("reader-login-status", error); }
+        });
+        $("password-form").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const status = $("password-status");
+          status.textContent = "Salvando senha...";
+          try {
+            const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+            if (data.new_password !== data.password_confirmation || data.new_password === state.temporaryPassword) throw new Error("A nova senha precisa ser diferente da temporária e ter confirmação igual.");
+            await json(await fetch(`${readersApi}/auth/change-password`, { method: "POST", headers: { ...authHeaders(sessionStorage.getItem(readerKey)), "Content-Type": "application/json" }, body: JSON.stringify(data) }));
+            $("catalog-step").hidden = false;
+            status.textContent = "Senha definida com sucesso.";
+            log("senha atualizada; consulte o acervo com a sessão do leitor.");
+          } catch (error) { showError("password-status", error); }
+        });
+        $("catalog-form").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const status = $("catalog-status");
+          status.textContent = "Consultando livros...";
+          try {
+            const filters = Object.fromEntries(new FormData(event.currentTarget).entries());
+            const params = new URLSearchParams(Object.entries(filters).filter(([, value]) => value));
+            const result = await json(await fetch(`${readersApi}/books?${params}`, { headers: authHeaders(sessionStorage.getItem(readerKey)) }));
+            renderBooks(result);
+          } catch (error) { showError("catalog-status", error); }
+        });
+      })();
+    </script>
+  </body>
+</html>

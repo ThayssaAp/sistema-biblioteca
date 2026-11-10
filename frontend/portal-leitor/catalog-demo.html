@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Demo do acervo | Portal do Leitor</title>
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+      .demo-badge { display: inline-flex; margin: 0 0 14px; padding: 5px 9px; border-radius: 999px; background: #e7f2ed; color: #1f5c4d; font-size: 12px; font-weight: 700; }
+      .demo-note { margin: 20px 0 0; padding: 12px 14px; border-left: 4px solid #1f5c4d; background: #f6f3ec; color: #5c6862; font-size: 14px; line-height: 1.5; }
+      .demo-actions { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 24px; font-size: 14px; }
+      .demo-actions a { color: #1f5c4d; font-weight: 650; }
+    </style>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="card wide" aria-labelledby="page-title">
+        <span class="demo-badge">DEMO VISUAL — dados fictícios, sem conexão com a API</span>
+        <p class="eyebrow">Portal do Leitor</p>
+        <h1 id="page-title">Consultar livros</h1>
+        <p class="intro">Teste os filtros do acervo e veja como os resultados aparecem para o leitor.</p>
+
+        <form id="catalog-demo-form" class="catalog-form">
+          <div class="field">
+            <label for="demo-title">Título</label>
+            <input id="demo-title" name="title" autocomplete="off" placeholder="Ex.: Dom Casmurro">
+          </div>
+          <div class="field">
+            <label for="demo-genre">Gênero</label>
+            <select id="demo-genre" name="genre">
+              <option value="">Todos os gêneros</option>
+              <option value="Romance">Romance</option>
+              <option value="Fantasia">Fantasia</option>
+              <option value="Ficção científica">Ficção científica</option>
+              <option value="História">História</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="demo-status">Disponibilidade</label>
+            <select id="demo-availability" name="status">
+              <option value="">Todos</option>
+              <option value="Disponível">Disponível</option>
+              <option value="Emprestado">Emprestado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="demo-age">Classificação etária</label>
+            <select id="demo-age" name="age_rating">
+              <option value="">Todas</option>
+              <option value="Livre">Livre</option>
+              <option value="10+">10+</option>
+              <option value="12+">12+</option>
+              <option value="14+">14+</option>
+              <option value="16+">16+</option>
+              <option value="18+">18+</option>
+            </select>
+          </div>
+          <button id="demo-submit" class="primary-button" type="submit">Consultar</button>
+        </form>
+
+        <p id="demo-status" class="status" role="status" aria-live="polite">Carregando acervo de demonstração...</p>
+        <section id="demo-books" class="books-list" aria-live="polite" aria-label="Resultados dos livros"></section>
+        <p class="demo-note">Esta tela usa somente dados fictícios no navegador. Ela serve para validar o layout, os filtros, o estado vazio e a leitura da disponibilidade.</p>
+        <nav class="demo-actions" aria-label="Navegação da demonstração">
+          <a href="./demo.html">Testar autenticação</a>
+          <a href="./catalog.html">Abrir consulta integrada (login obrigatório)</a>
+        </nav>
+      </section>
+    </main>
+    <script>
+      (() => {
+        const books = [
+          { title: "Dom Casmurro", genre: "Romance", age_rating: "Livre", status: "Disponível", code: "#ADS0001" },
+          { title: "O Hobbit", genre: "Fantasia", age_rating: "10+", status: "Emprestado", code: "#ADS0002" },
+          { title: "1984", genre: "Ficção científica", age_rating: "16+", status: "Disponível", code: "#ADS0003" },
+          { title: "A menina que roubava livros", genre: "História", age_rating: "14+", status: "Disponível", code: "#ADS0004" },
+          { title: "Capitães da Areia", genre: "Romance", age_rating: "14+", status: "Emprestado", code: "#ADS0005" }
+        ];
+        const form = document.getElementById("catalog-demo-form");
+        const status = document.getElementById("demo-status");
+        const list = document.getElementById("demo-books");
+        const submit = document.getElementById("demo-submit");
+        const render = (items) => {
+          list.replaceChildren();
+          if (!items.length) {
+            status.textContent = "Nenhum livro encontrado com esses filtros.";
+            return;
+          }
+          status.textContent = `${items.length} livro(s) encontrado(s).`;
+          items.forEach((book) => {
+            const card = document.createElement("article");
+            card.className = "book-card";
+            const title = document.createElement("h2");
+            title.textContent = book.title;
+            const details = document.createElement("p");
+            details.textContent = `${book.genre} · ${book.age_rating} · ${book.status}`;
+            const code = document.createElement("code");
+            code.textContent = book.code;
+            card.append(title, details, code);
+            list.appendChild(card);
+          });
+        };
+        const search = () => {
+          status.dataset.state = "loading";
+          status.textContent = "Consultando livros...";
+          submit.disabled = true;
+          window.setTimeout(() => {
+            const data = Object.fromEntries(new FormData(form).entries());
+            const title = data.title.trim().toLocaleLowerCase("pt-BR");
+            const filtered = books.filter((book) =>
+              (!title || book.title.toLocaleLowerCase("pt-BR").includes(title)) &&
+              (!data.genre || book.genre === data.genre) &&
+              (!data.status || book.status === data.status) &&
+              (!data.age_rating || book.age_rating === data.age_rating)
+            );
+            render(filtered);
+            submit.disabled = false;
+            status.dataset.state = "";
+          }, 250);
+        };
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          search();
+        });
+        search();
+      })();
+    </script>
+  </body>
+</html>
