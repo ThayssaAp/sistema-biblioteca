@@ -23,6 +23,11 @@ function fineAmountCents(overdueDays) {
   return Math.max(0, overdueDays) * 1000;
 }
 
+function overdueDaysBetween(dueAt, returnedAt) {
+  if (returnedAt <= dueAt) return 0;
+  return Math.ceil((returnedAt - dueAt) / 86400000);
+}
+
 test("permite operações de balcão somente para Funcionário e Admin", () => {
   assert.equal(canOperateAtServiceDesk("FUNCIONARIO"), true);
   assert.equal(canOperateAtServiceDesk("ADMIN"), true);
@@ -84,4 +89,12 @@ test("aceita somente transições de status previstas", () => {
   assert.equal(fineAmountCents(0), 0);
   assert.equal(fineAmountCents(1), 1000);
   assert.equal(fineAmountCents(3), 3000);
+});
+
+test("calcula atraso com timestamps em milissegundos", () => {
+  const dueAt = Date.UTC(2026, 10, 10, 18);
+  assert.equal(overdueDaysBetween(dueAt, dueAt), 0);
+  assert.equal(overdueDaysBetween(dueAt, dueAt + 86400000), 1);
+  assert.equal(overdueDaysBetween(dueAt, dueAt + (3 * 86400000)), 3);
+  assert.equal(overdueDaysBetween(dueAt, dueAt + 3600000), 1);
 });

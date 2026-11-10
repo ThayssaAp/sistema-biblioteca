@@ -17,7 +17,7 @@ query reader verb=POST {
   stack {
     // Verifica se o email já está cadastrado
     precondition (`db.count user {where: {email: $input.email}} > 0`) {
-      error_type = "conflict"
+      error_type = "standard"
       error = "O email já está cadastrado no sistema."
     }
   

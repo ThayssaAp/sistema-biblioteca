@@ -6,7 +6,7 @@ A interface é estática e consome a API publicada no Xano. Para iniciar a parti
 python3 -m http.server 8765 --directory frontend
 ```
 
-Abra `http://127.0.0.1:8765/`. A raiz encaminha para a tela de login; após entrar, o sistema valida a sessão e abre o menu principal. Funcionários e Admins podem acessar cadastro/consulta de livros e leitores. A gestão de gêneros aparece apenas para Admin. Empréstimos e multas no balcão, exclusão de livros e dashboard são apresentados como **Em breve** e ainda não executam operações.
+Abra `http://127.0.0.1:8765/`. A raiz encaminha para a tela de login; após entrar, o sistema valida a sessão e abre o menu principal. Funcionários e Admins podem acessar cadastro/consulta de livros e leitores, além do fluxo de empréstimos e consulta de multas no balcão. A gestão de gêneros aparece apenas para Admin. Exclusão de livros e dashboard ainda são apresentados como **Em breve**.
 
 O Portal do Leitor não está disponível nesta etapa: leitores ainda não têm autenticação própria, e a sessão de operador não é aceita como sessão de leitor. O menu e as telas de tarefa encaminham para login quando a sessão do operador está ausente ou expirada.
 
