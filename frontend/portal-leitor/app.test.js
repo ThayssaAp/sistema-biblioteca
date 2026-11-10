@@ -10,6 +10,7 @@ const {
   validateLogin,
   validatePasswordChange,
   createClient,
+  setupHome,
   storageKeys
 } = require("./app.js");
 
@@ -120,7 +121,7 @@ test("telas do portal possuem login, troca obrigatória e acessibilidade básica
   const login = readFileSync(path.join(directory, "index.html"), "utf8");
   const change = readFileSync(path.join(directory, "change-password.html"), "utf8");
   assert.match(login, /id="reader-login-form"/);
-  assert.match(login, /href="\.\.\/login\/"/);
+  assert.match(login, /href="\.\.\/">Voltar para seleção de acesso/);
   assert.match(change, /id="password-change-form"/);
   assert.match(change, /for="password_confirmation"/);
   const home = readFileSync(path.join(directory, "home.html"), "utf8");
@@ -130,4 +131,17 @@ test("telas do portal possuem login, troca obrigatória e acessibilidade básica
   assert.match(catalog, /id="catalog-form"/);
   assert.match(catalog, /id="genre_id"/);
   assert.match(catalog, /id="books-list"/);
+});
+
+test("login do leitor não é tratado como página inicial", () => {
+  const document = {
+    getElementById: (id) => id === "page-title" ? {} : null
+  };
+  let redirected = false;
+  setupHome(document, {}, {
+    getItem: () => null
+  }, {
+    replace: () => { redirected = true; }
+  });
+  assert.equal(redirected, false);
 });
