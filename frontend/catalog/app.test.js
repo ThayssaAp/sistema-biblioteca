@@ -7,8 +7,10 @@ const path = require("node:path");
 const {
   createCatalogClient,
   bookPayloadFromEntries,
+  bookDeletionPayload,
   actionErrorMessage,
   canManageGenres,
+  canDeleteBooks,
   initialCatalogView,
   storageKeys,
   ageRatings,
@@ -103,6 +105,34 @@ test("catalog client sends create and genre mutation payloads", async () => {
   assert.equal(calls[3].options.headers.Authorization, "Bearer token");
 });
 
+test("catalog client sends an authenticated book deletion request", async () => {
+  let request;
+  const client = createCatalogClient(
+    { apiBaseUrl: "https://auth.example.test", catalogApiBaseUrl: "https://catalog.example.test" },
+    async (url, options) => {
+      request = { url, options };
+      return { ok: true, json: async () => ({ deleted: true, book_id: 7 }) };
+    }
+  );
+
+  await client.deleteBook("session-token", 7, "  Duplicado no acervo  ");
+
+  assert.equal(request.url, "https://catalog.example.test/books");
+  assert.equal(request.options.method, "DELETE");
+  assert.equal(request.options.headers.Authorization, "Bearer session-token");
+  assert.deepEqual(JSON.parse(request.options.body), {
+    book_id: 7,
+    reason: "Duplicado no acervo"
+  });
+});
+
+test("book deletion payload normalizes the identifier and justification", () => {
+  assert.deepEqual(bookDeletionPayload("7", "  Exemplar danificado  "), {
+    book_id: 7,
+    reason: "Exemplar danificado"
+  });
+});
+
 test("book form payload trims text and converts numeric fields", () => {
   const payload = bookPayloadFromEntries([
     ["title", "  Duna  "],
@@ -182,6 +212,11 @@ test("book form exposes native validation and accessible labels", () => {
   assert.match(html, /id="filter-genre"[^>]*name="genre_id"/);
   assert.match(html, /id="filter-status"[^>]*name="status"/);
   assert.match(html, /href="\.\.\/menu\/index\.html">Menu principal/);
+  assert.match(html, /id="delete-tab"[^>]*data-view="delete-view"[^>]*hidden/);
+  assert.match(html, /<dialog id="delete-dialog"/);
+  assert.match(html, /<label for="delete-reason">Justificativa/);
+  assert.match(html, /id="delete-reason"[^>]*maxlength="500"[^>]*required/);
+  assert.match(html, /id="delete-empty-state"[^>]*hidden/);
 });
 
 test("catalog results use text rendering and a narrow-screen scroll container", () => {
@@ -195,6 +230,8 @@ test("catalog results use text rendering and a narrow-screen scroll container", 
   assert.match(app, /catch \(error\) \{\s*setStatus\(actionErrorMessage\(error\)\)/);
   assert.match(app, /emptyState\.hidden = books\.length > 0/);
   assert.match(app, /cell\.textContent = cellData\.value \|\| "—"/);
+  assert.match(app, /client\.deleteBook\(token, selectedBook\.id, reason\)/);
+  assert.match(app, /deleteBooksList\.replaceChildren\(\)/);
   assert.doesNotMatch(app, /\.innerHTML\s*=/);
   assert.match(css, /\.table-wrap\s*\{\s*overflow-x:\s*auto;/);
   assert.match(css, /@media \(max-width: 760px\)/);
@@ -212,6 +249,31 @@ test("book schema and API keep the code sequence backend-controlled", () => {
   assert.match(createApi, /"#ADS%04d"\|sprintf:\$book\.id/);
   assert.match(createApi, /status: "Disponível"/);
   assert.doesNotMatch(createApi, /^\s*text\?? code\b/m);
+});
+
+test("book deletion is an audited tombstone protected by backend role checks", () => {
+  const table = readFileSync(path.join(__dirname, "../../xano/table/book.xs"), "utf8");
+  const fineTable = readFileSync(path.join(__dirname, "../../xano/table/fine.xs"), "utf8");
+  const removeApi = readFileSync(path.join(__dirname, "../../xano/api/catalog/books_DELETE.xs"), "utf8");
+  const listApi = readFileSync(path.join(__dirname, "../../xano/api/catalog/books_GET.xs"), "utf8");
+  const loanApi = readFileSync(path.join(__dirname, "../../xano/api/emprestimos/emprestimo_POST.xs"), "utf8");
+
+  assert.match(table, /timestamp\? deleted_at/);
+  assert.match(table, /int\? deleted_by/);
+  assert.match(table, /text\? deletion_reason/);
+  assert.match(removeApi, /auth = "user"/);
+  assert.match(removeApi, /required_role: "ADMIN"/);
+  assert.match(removeApi, /\$book\.status == "Disponível"/);
+  assert.match(removeApi, /deleted_at: "now"/);
+  assert.match(removeApi, /action: "book_delete"/);
+  assert.match(removeApi, /db\.transaction/);
+  assert.match(removeApi, /status: "Zerada"/);
+  assert.match(removeApi, /resolved_by: \$operator\.id/);
+  assert.match(removeApi, /fines_zeroed: \(\$pending_fines\|count\)/);
+  assert.match(listApi, /\$db\.book\.deleted_at == null/);
+  assert.match(fineTable, /values = \["Pendente", "Paga", "Abonada", "Zerada"\]/);
+  assert.match(loanApi, /"deleted_at"/);
+  assert.match(loanApi, /\$book\.deleted_at == null/);
 });
 
 test("catalog client rejects failed API requests", async () => {
@@ -264,12 +326,22 @@ test("catalog UI maps genre-specific and generic failures to text messages", () 
     actionErrorMessage(new Error("CATALOG_REQUEST_FAILED")),
     "Não foi possível concluir a operação. Verifique os dados e tente novamente."
   );
+  assert.equal(
+    actionErrorMessage(new Error("BOOK_UNAVAILABLE")),
+    "Não é possível retirar um exemplar emprestado ou já retirado."
+  );
 });
 
 test("genre management is restricted to administrators", () => {
   assert.equal(canManageGenres("ADMIN"), true);
   assert.equal(canManageGenres("FUNCIONARIO"), false);
   assert.equal(canManageGenres(undefined), false);
+});
+
+test("book deletion controls are restricted to administrators", () => {
+  assert.equal(canDeleteBooks("ADMIN"), true);
+  assert.equal(canDeleteBooks("FUNCIONARIO"), false);
+  assert.equal(canDeleteBooks(undefined), false);
 });
 
 test("catalog opens the requested task and protects the genres view by role", () => {
@@ -286,6 +358,14 @@ test("catalog opens the requested task and protects the genres view by role", ()
     accessDenied: false
   });
   assert.deepEqual(initialCatalogView("?view=genres-view", "FUNCIONARIO"), {
+    viewId: "search-view",
+    accessDenied: true
+  });
+  assert.deepEqual(initialCatalogView("?view=delete-view", "ADMIN"), {
+    viewId: "delete-view",
+    accessDenied: false
+  });
+  assert.deepEqual(initialCatalogView("?view=delete-view", "FUNCIONARIO"), {
     viewId: "search-view",
     accessDenied: true
   });
@@ -316,4 +396,10 @@ test("catalog client requires a separate catalog API group URL", () => {
     () => createCatalogClient({ apiBaseUrl: "https://auth.example.test" }, async () => {}),
     { message: "API_BASE_URL_REQUIRED" }
   );
+});
+
+test("catalog configuration uses the current Xano API group canonical", () => {
+  const config = readFileSync(path.join(__dirname, "../login/config.js"), "utf8");
+
+  assert.match(config, /catalogApiBaseUrl:\s*"https:\/\/x8ki-letl-twmt\.n7\.xano\.io\/api:4YWb88FH"/);
 });

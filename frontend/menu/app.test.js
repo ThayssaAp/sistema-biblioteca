@@ -87,6 +87,8 @@ test("admin menu includes shared tasks and exclusive administrator options", () 
   assert.equal(titles.some((title) => title.includes("Portal do Leitor")), false);
   const adminItems = sections[1].items;
   assert.equal(adminItems.find((item) => item.title === "Gêneros").href, "../catalog/index.html?view=genres-view");
+  assert.equal(adminItems.find((item) => item.title === "Exclusão de livro").href, "../catalog/index.html?view=delete-view");
+  assert.equal(adminItems.find((item) => item.title === "Exclusão de livro").comingSoon, undefined);
   assert.equal(adminItems.find((item) => item.title === "Dashboard").href, "./index.html?view=dashboard");
 });
 
@@ -108,7 +110,6 @@ test("all future tasks have informational placeholders and a return path", () =>
   const expected = {
     loans: "Empréstimos",
     fines: "Multas",
-    "book-deletion": "Exclusão de livro",
     dashboard: "Dashboard"
   };
   const client = createMenuClient(

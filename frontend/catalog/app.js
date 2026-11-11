@@ -8,6 +8,7 @@
   const DEFAULT_ACTION_ERROR = "Não foi possível concluir a operação. Verifique os dados e tente novamente.";
   const GENRE_IN_USE_ERROR = "Não é possível remover um gênero que está associado a exemplares.";
   const GENRE_DUPLICATE_ERROR = "Já existe um gênero com esse nome.";
+  const BOOK_UNAVAILABLE_ERROR = "Não é possível retirar um exemplar emprestado ou já retirado.";
 
   function actionErrorMessage(error) {
     if (error?.message === "GENRE_IN_USE") {
@@ -16,10 +17,17 @@
     if (error?.message === "GENRE_DUPLICATE") {
       return GENRE_DUPLICATE_ERROR;
     }
+    if (error?.message === "BOOK_UNAVAILABLE") {
+      return BOOK_UNAVAILABLE_ERROR;
+    }
     return DEFAULT_ACTION_ERROR;
   }
 
   function canManageGenres(role) {
+    return role === "ADMIN";
+  }
+
+  function canDeleteBooks(role) {
     return role === "ADMIN";
   }
 
@@ -33,7 +41,16 @@
         ? { viewId: requestedView, accessDenied: false }
         : { viewId: "search-view", accessDenied: true };
     }
+    if (requestedView === "delete-view") {
+      return canDeleteBooks(role)
+        ? { viewId: requestedView, accessDenied: false }
+        : { viewId: "search-view", accessDenied: true };
+    }
     return { viewId: "search-view", accessDenied: false };
+  }
+
+  function bookDeletionPayload(bookId, reason) {
+    return { book_id: Number(bookId), reason: String(reason || "").trim() };
   }
 
   function bookPayloadFromEntries(entries) {
@@ -94,6 +111,10 @@
           && result.message.includes("Já existe um gênero com esse nome.")) {
           throw new Error("GENRE_DUPLICATE");
         }
+        if (typeof result?.message === "string"
+          && result.message.includes("Não é possível retirar um exemplar emprestado.")) {
+          throw new Error("BOOK_UNAVAILABLE");
+        }
         throw new Error(response.status === 401 || response.status === 403
           ? "UNAUTHORIZED"
           : "CATALOG_REQUEST_FAILED");
@@ -126,6 +147,12 @@
           body: JSON.stringify({ genre_id: genreId })
         });
       },
+      deleteBook(token, bookId, reason) {
+        return send(catalogBaseUrl, "/books", token, {
+          method: "DELETE",
+          body: JSON.stringify(bookDeletionPayload(bookId, reason))
+        });
+      },
       createBook(token, book) {
         return send(catalogBaseUrl, "/books", token, {
           method: "POST",
@@ -148,8 +175,10 @@
   const publicApi = Object.freeze({
     createCatalogClient,
     bookPayloadFromEntries,
+    bookDeletionPayload,
     actionErrorMessage,
     canManageGenres,
+    canDeleteBooks,
     initialCatalogView,
     storageKeys: Object.freeze({ token: TOKEN_KEY, operator: OPERATOR_KEY }),
     ageRatings: AGE_RATINGS,
@@ -198,22 +227,36 @@
   const navButtons = Array.from(root.document.querySelectorAll("[data-view]"));
   const views = Array.from(root.document.querySelectorAll(".task-view"));
   const genresTab = root.document.getElementById("genres-tab");
+  const deleteTab = root.document.getElementById("delete-tab");
   const searchForm = root.document.getElementById("search-form");
+  const deleteSearchForm = root.document.getElementById("delete-search-form");
   const booksList = root.document.getElementById("books-list");
+  const deleteBooksList = root.document.getElementById("delete-books-list");
   const emptyState = root.document.getElementById("empty-state");
+  const deleteEmptyState = root.document.getElementById("delete-empty-state");
   const filterGenre = root.document.getElementById("filter-genre");
   const bookGenre = root.document.getElementById("book-genre");
   const bookForm = root.document.getElementById("book-form");
   const genreForm = root.document.getElementById("genre-form");
+  const deleteDialog = root.document.getElementById("delete-dialog");
+  const deleteForm = root.document.getElementById("delete-form");
+  const deleteReason = root.document.getElementById("delete-reason");
+  const deleteBookLabel = root.document.getElementById("delete-book-label");
   const genreList = root.document.getElementById("genre-list");
   const yearInput = root.document.getElementById("book-year");
   let operator;
   let genres = [];
+  let selectedBookForDeletion;
+  let deletionFilters = {};
+  let deletionInProgress = false;
 
   yearInput.max = String(new Date().getFullYear());
 
   function showView(viewId) {
     if (viewId === "genres-view" && !canManageGenres(operator?.role)) {
+      return;
+    }
+    if (viewId === "delete-view" && !canDeleteBooks(operator?.role)) {
       return;
     }
     for (const view of views) {
@@ -325,6 +368,38 @@
     }
   }
 
+  function renderDeletableBooks(books) {
+    const availableBooks = books.filter((book) => book.status === "Disponível");
+    deleteBooksList.replaceChildren();
+    deleteEmptyState.hidden = availableBooks.length > 0;
+
+    for (const book of availableBooks) {
+      const row = root.document.createElement("tr");
+      for (const value of [book.code, book.title, book.genre_name]) {
+        const cell = root.document.createElement("td");
+        cell.textContent = value || "—";
+        row.append(cell);
+      }
+
+      const actionCell = root.document.createElement("td");
+      const deleteButton = root.document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "secondary-button";
+      deleteButton.textContent = "Retirar";
+      deleteButton.setAttribute("aria-label", `Retirar exemplar ${book.code || book.title}`);
+      deleteButton.addEventListener("click", () => {
+        selectedBookForDeletion = book;
+        deleteBookLabel.textContent = `${book.code || "Exemplar"} · ${book.title || ""}`;
+        deleteForm.reset();
+        deleteDialog.showModal();
+        deleteReason.focus();
+      });
+      actionCell.append(deleteButton);
+      row.append(actionCell);
+      deleteBooksList.append(row);
+    }
+  }
+
   async function loadGenres() {
     const result = await client.listGenres(token);
     if (!Array.isArray(result) || result.some((genre) => !Number.isInteger(genre.id) || typeof genre.name !== "string")) {
@@ -340,6 +415,15 @@
       throw new Error("INVALID_API_RESPONSE");
     }
     renderBooks(result);
+  }
+
+  async function loadDeletionCandidates(filters) {
+    deletionFilters = filters;
+    const result = await client.listBooks(token, { ...filters, status: "Disponível" });
+    if (!Array.isArray(result)) {
+      throw new Error("INVALID_API_RESPONSE");
+    }
+    renderDeletableBooks(result);
   }
 
   async function runAction(action, button) {
@@ -381,6 +465,53 @@
   root.document.getElementById("clear-filters").addEventListener("click", async (event) => {
     searchForm.reset();
     await runAction(() => loadBooks({}), event.currentTarget);
+  });
+
+  deleteSearchForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    deletionFilters = Object.fromEntries(new FormData(deleteSearchForm).entries());
+    await runAction(
+      () => loadDeletionCandidates(deletionFilters),
+      deleteSearchForm.querySelector('[type="submit"]')
+    );
+  });
+
+  root.document.getElementById("clear-delete-filters").addEventListener("click", async (event) => {
+    deleteSearchForm.reset();
+    deletionFilters = {};
+    await runAction(() => loadDeletionCandidates({}), event.currentTarget);
+  });
+
+  root.document.getElementById("cancel-delete").addEventListener("click", () => {
+    deleteDialog.close();
+    selectedBookForDeletion = undefined;
+  });
+
+  deleteForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (deletionInProgress || !selectedBookForDeletion || !deleteForm.reportValidity()) {
+      return;
+    }
+
+    const selectedBook = selectedBookForDeletion;
+    const reason = deleteReason.value;
+    deletionInProgress = true;
+    try {
+      await runAction(async () => {
+        await client.deleteBook(token, selectedBook.id, reason);
+        deleteDialog.close();
+        deleteForm.reset();
+        selectedBookForDeletion = undefined;
+        setStatus(`Exemplar ${selectedBook.code} retirado do acervo.`, "success");
+        try {
+          await loadDeletionCandidates(deletionFilters);
+        } catch {
+          setStatus("Retirada concluída. Não foi possível atualizar a lista.");
+        }
+      }, deleteForm.querySelector('[type="submit"]'));
+    } finally {
+      deletionInProgress = false;
+    }
   });
 
   root.document.getElementById("cancel-create").addEventListener("click", () => {
@@ -438,14 +569,18 @@
     storage.setItem(OPERATOR_KEY, JSON.stringify(operator));
     operatorLabel.textContent = `${operator.name} · ${operator.role === "ADMIN" ? "Administrador" : "Funcionário"}`;
     genresTab.hidden = !canManageGenres(operator.role);
+    deleteTab.hidden = !canDeleteBooks(operator.role);
 
     try {
       await loadGenres();
       await loadBooks({});
       const initialView = initialCatalogView(root.location.search, operator.role);
       showView(initialView.viewId);
+      if (initialView.viewId === "delete-view") {
+        await loadDeletionCandidates({});
+      }
       setStatus(initialView.accessDenied
-        ? "A gestão de gêneros está disponível somente para Admin."
+        ? "Esta área administrativa está disponível somente para Admin."
         : "", initialView.accessDenied ? "error" : "success");
     } catch {
       setStatus("Não foi possível carregar o acervo. Tente novamente.");
