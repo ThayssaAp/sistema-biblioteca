@@ -1,5 +1,5 @@
 // Creates a loan and marks the selected book as borrowed.
-query "emprestimo" verb=POST {
+query emprestimo verb=POST {
   api_group = "Emprestimos"
   auth = "user"
 
@@ -26,11 +26,15 @@ query "emprestimo" verb=POST {
     db.get book {
       field_name = "id"
       field_value = $input.book_id
-      output = ["id", "code", "title", "age_rating", "status"]
+      output = ["id", "code", "title", "age_rating", "status", "deleted_at"]
     } as $book
     precondition ($book != null) {
       error_type = "inputerror"
       error = "Exemplar não encontrado."
+    }
+    precondition ($book.deleted_at == null) {
+      error_type = "inputerror"
+      error = "Este exemplar foi retirado do acervo."
     }
     precondition ($book.status == "Disponível") {
       error_type = "inputerror"
@@ -53,22 +57,33 @@ query "emprestimo" verb=POST {
     }
     conditional {
       if ($book.age_rating == "10+") {
-        var.update $required_age { value = 10 }
+        var.update $required_age {
+          value = 10
+        }
       }
     }
+
     conditional {
       if ($book.age_rating == "12+") {
-        var.update $required_age { value = 12 }
+        var.update $required_age {
+          value = 12
+        }
       }
     }
+
     conditional {
       if ($book.age_rating == "14+") {
-        var.update $required_age { value = 14 }
+        var.update $required_age {
+          value = 14
+        }
       }
     }
+
     conditional {
       if ($book.age_rating == "16+") {
-        var.update $required_age { value = 16 }
+        var.update $required_age {
+          value = 16
+        }
       }
     }
     precondition ($reader_age >= $required_age) {
@@ -151,7 +166,11 @@ query "emprestimo" verb=POST {
       input = {
         user_id: $auth.id
         action: "loan_create"
-        metadata: {loan_id: $loan_with_code.id, book_id: $book.id, reader_id: $reader.id}
+        metadata: {
+          loan_id: $loan_with_code.id
+          book_id: $book.id
+          reader_id: $reader.id
+        }
       }
     } as $event
   }

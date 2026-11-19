@@ -15,9 +15,11 @@ table loan {
     int book_id {
       table = "book"
     }
+
     int operator_id {
       table = "user"
     }
+
     timestamp borrowed_at?=now
     timestamp due_at
     timestamp returned_at?

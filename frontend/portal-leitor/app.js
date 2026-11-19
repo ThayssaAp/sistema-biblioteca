@@ -208,9 +208,8 @@
   }
 
   function setupHome(document, client, storage, location) {
-    const heading = document.getElementById("page-title");
-    if (!heading) return;
     const logout = document.getElementById("logout-link");
+    if (!logout) return;
     if (logout) {
       logout.addEventListener("click", (event) => {
         event.preventDefault();
@@ -318,6 +317,7 @@
     validateLogin,
     validatePasswordChange,
     createClient,
+    setupHome,
     setupCatalog,
     storageKeys: Object.freeze({ token: TOKEN_KEY, reader: READER_KEY, pending: PENDING_KEY })
   });

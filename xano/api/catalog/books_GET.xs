@@ -32,7 +32,7 @@ query "books" verb=GET {
       eval = {
         genre_name: $db.genre.name
       }
-      where = $db.book.code ==? $input.code && ($input.title == null || $db.book.title includes $input.title) && $db.book.genre_id ==? $input.genre_id && $db.book.status ==? $input.status
+      where = $db.book.deleted_at == null && $db.book.code ==? $input.code && ($input.title == null || $db.book.title includes $input.title) && $db.book.genre_id ==? $input.genre_id && $db.book.status ==? $input.status
       sort = {id: "desc"}
       return = {type: "list"}
       output = ["id", "code", "title", "isbn", "publication_year", "genre_id", "genre_name", "age_rating", "status"]
