@@ -49,7 +49,9 @@ Registrada automaticamente quando ocorre devolução com atraso.
   - Valor: R$ 10,00 por dia corrido iniciado de atraso, começando no dia seguinte ao vencimento.
   - Status: `Pendente`, `Paga`, `Abonada` (pelo Admin) ou `Zerada` (por exclusão do livro).
   - Pagamento: Funcionário ou Admin pode registrar o pagamento de uma multa
-    `Pendente`, que passa para `Paga` com operador, data e valor preservados.
+    `Pendente`, que passa para `Paga` com `paid_by`, `paid_at` e o valor
+    original preservados. Multas `Paga`, `Abonada` ou `Zerada` não podem ser
+    pagas novamente.
 
 ### Cadastro de funcionário
 Representa um operador interno autorizado a utilizar o Sistema Balcão.

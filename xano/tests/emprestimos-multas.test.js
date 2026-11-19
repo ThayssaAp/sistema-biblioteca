@@ -28,6 +28,17 @@ function overdueDaysBetween(dueAt, returnedAt) {
   return Math.ceil((returnedAt - dueAt) / 86400000);
 }
 
+function payFine(fine, role, paidBy, paidAt) {
+  if (!canOperateAtServiceDesk(role)) return { error: "UNAUTHORIZED" };
+  if (!fine || fine.status !== "Pendente") return { error: "NOT_PENDING" };
+  return {
+    ...fine,
+    status: "Paga",
+    paid_by: paidBy,
+    paid_at: paidAt
+  };
+}
+
 test("permite operações de balcão somente para Funcionário e Admin", () => {
   assert.equal(canOperateAtServiceDesk("FUNCIONARIO"), true);
   assert.equal(canOperateAtServiceDesk("ADMIN"), true);
@@ -97,4 +108,25 @@ test("calcula atraso com timestamps em milissegundos", () => {
   assert.equal(overdueDaysBetween(dueAt, dueAt + 86400000), 1);
   assert.equal(overdueDaysBetween(dueAt, dueAt + (3 * 86400000)), 3);
   assert.equal(overdueDaysBetween(dueAt, dueAt + 3600000), 1);
+});
+
+test("paga somente multa pendente e preserva valor com auditoria", () => {
+  const fine = { id: 3, amount_cents: 2000, status: "Pendente" };
+  const paid = payFine(fine, "FUNCIONARIO", 8, 1794260000000);
+
+  assert.equal(paid.status, "Paga");
+  assert.equal(paid.amount_cents, 2000);
+  assert.equal(paid.paid_by, 8);
+  assert.equal(paid.paid_at, 1794260000000);
+  assert.deepEqual(fine, { id: 3, amount_cents: 2000, status: "Pendente" });
+});
+
+test("rejeita pagamento por leitor, multa resolvida e tentativa duplicada", () => {
+  const pending = { id: 3, amount_cents: 2000, status: "Pendente" };
+  const paid = payFine(pending, "ADMIN", 8, 1794260000000);
+
+  assert.equal(payFine(pending, "LEITOR", 9, 1794260000001).error, "UNAUTHORIZED");
+  assert.equal(payFine({ ...paid }, "ADMIN", 8, 1794260000002).error, "NOT_PENDING");
+  assert.equal(payFine({ id: 4, amount_cents: 1000, status: "Abonada" }, "ADMIN", 8, 1794260000000).error, "NOT_PENDING");
+  assert.equal(payFine(null, "ADMIN", 8, 1794260000000).error, "NOT_PENDING");
 });

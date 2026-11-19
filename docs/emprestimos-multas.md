@@ -129,10 +129,31 @@ Resposta resumida:
     "amount_cents": 2000,
     "generated_at": 1794260000000,
     "status": "Pendente",
+    "paid_by": null,
+    "paid_at": null,
     "loan_code": "#EMP000008"
   }
 ]
 ```
+
+### `POST /api:05S-AQAd/multas/pagamento`
+
+Registra no balcão o pagamento de uma multa pendente. A operação exige sessão
+de Funcionário ou Admin e usa o valor persistido na multa, sem aceitar valor
+enviado pelo cliente.
+
+Entrada:
+
+```json
+{
+  "fine_id": 3
+}
+```
+
+O pagamento altera `status` de `Pendente` para `Paga`, preserva
+`amount_cents`, registra `paid_by` com o operador autenticado e `paid_at` com
+o timestamp da quitação. Multas `Paga`, `Abonada` ou `Zerada`, identificadores
+inexistentes e tentativas duplicadas são rejeitados.
 
 ## Tabelas
 
@@ -159,6 +180,8 @@ Campos operacionais principais:
 - `amount_cents`: R$ 10,00 por dia, ou `1000` centavos;
 - `generated_at`: data de geração;
 - `status`: `Pendente`, `Paga`, `Abonada` ou `Zerada`.
+- `paid_by` e `paid_at`: operador e data/hora do pagamento registrado no
+  balcão; permanecem nulos para multas que ainda não foram pagas.
 
 O índice único por `loan_id` impede a criação de uma segunda multa para a mesma
 devolução. O cálculo usa `1000` centavos por dia de atraso (`R$ 10,00`) e a
@@ -176,3 +199,5 @@ node --test xano/tests/emprestimos-multas.test.js
 
 O fluxo manual validado no ambiente publicado cobriu criação, consulta,
 renovação única, devolução, liberação do exemplar e geração de multa pendente.
+O pagamento de multa deve ser validado após a publicação do endpoint no grupo
+`Multas`, incluindo a preservação do valor e da auditoria.
