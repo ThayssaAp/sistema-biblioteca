@@ -37,14 +37,15 @@ test("aplica máscaras de telefone e data e normaliza a data para a API", () => 
 });
 
 test("valida campos obrigatórios e e-mail", () => {
-  const errors = validateReader({ cpf: "123", name: " ", birth_date: "", address: "", phone: "", email: "invalido" });
+  const errors = validateReader({ cpf: "123", name: " ", birth_date: "", address: "", phone: "", email: "invalido", temporary_password: "" });
   assert.deepEqual(errors, {
     cpf: "Informe um CPF válido.",
     name: "Este campo é obrigatório.",
     birth_date: "Este campo é obrigatório.",
     address: "Este campo é obrigatório.",
     phone: "Este campo é obrigatório.",
-    email: "Informe um e-mail válido."
+    email: "Informe um e-mail válido.",
+    temporary_password: "Use ao menos 8 caracteres, uma letra e um dígito."
   });
 });
 
@@ -100,7 +101,8 @@ test("cliente não envia e-mail vazio quando o campo é opcional", async () => {
     birth_date: "25/05/1990",
     address: "Rua A",
     phone: "(11) 98765-4321",
-    email: "   "
+    email: "   ",
+    temporary_password: "Temp1234"
   });
   assert.equal(Object.prototype.hasOwnProperty.call(body, "email"), false);
 });

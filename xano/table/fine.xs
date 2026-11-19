@@ -11,18 +11,16 @@ table fine {
     int loan_id {
       table = "loan"
     }
-
     int reader_id {
       table = "reader"
     }
 
-    int overdue_days?
-    int amount_cents?
+    int overdue_days?=0
+    int amount_cents?=0
     timestamp generated_at?=now
     enum status {
       values = ["Pendente", "Paga", "Abonada", "Zerada"]
     }
-
     int resolved_by?
     timestamp resolved_at?
     text resolution_notes?

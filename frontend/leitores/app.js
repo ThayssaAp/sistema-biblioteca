@@ -82,6 +82,9 @@
     if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
       errors.email = "Informe um e-mail válido.";
     }
+    if (!data.temporary_password || data.temporary_password.length < 8 || !/[A-Za-z]/.test(data.temporary_password) || !/[0-9]/.test(data.temporary_password)) {
+      errors.temporary_password = "Use ao menos 8 caracteres, uma letra e um dígito.";
+    }
     return errors;
   }
 
@@ -159,7 +162,7 @@
     const button = document.getElementById("submit-button");
     const phone = document.getElementById("phone");
     const birthDate = document.getElementById("birth_date");
-    const fields = ["cpf", "name", "birth_date", "address", "phone", "email"];
+    const fields = ["cpf", "name", "birth_date", "address", "phone", "email", "temporary_password"];
     const setStatus = (text, state) => {
       status.textContent = text;
       status.dataset.state = state || "error";

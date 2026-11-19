@@ -12,7 +12,6 @@ table loan {
     int reader_id {
       table = "reader"
     }
-
     int book_id {
       table = "book"
     }
@@ -25,12 +24,11 @@ table loan {
     timestamp due_at
     timestamp returned_at?
     timestamp renewed_at?
-    int renewal_count?
+    int renewal_count?=0
     text renewal_source?
     enum status {
       values = ["Ativo", "Devolvido"]
     }
-
     int returned_by?
     text return_notes?
   }

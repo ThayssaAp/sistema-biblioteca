@@ -18,7 +18,6 @@ query emprestimo verb=POST {
       field_value = $input.reader_id
       output = ["id", "cpf", "name", "birth_date"]
     } as $reader
-
     precondition ($reader != null) {
       error_type = "inputerror"
       error = "Leitor não encontrado."
@@ -29,17 +28,14 @@ query emprestimo verb=POST {
       field_value = $input.book_id
       output = ["id", "code", "title", "age_rating", "status", "deleted_at"]
     } as $book
-
     precondition ($book != null) {
       error_type = "inputerror"
       error = "Exemplar não encontrado."
     }
-
     precondition ($book.deleted_at == null) {
       error_type = "inputerror"
       error = "Este exemplar foi retirado do acervo."
     }
-
     precondition ($book.status == "Disponível") {
       error_type = "inputerror"
       error = "Este exemplar não está disponível."
@@ -52,7 +48,6 @@ query emprestimo verb=POST {
     var $required_age {
       value = 0
     }
-
     conditional {
       if ($book.age_rating == "Não informada" || $book.age_rating == "18+") {
         var.update $required_age {
@@ -60,7 +55,6 @@ query emprestimo verb=POST {
         }
       }
     }
-
     conditional {
       if ($book.age_rating == "10+") {
         var.update $required_age {
@@ -92,7 +86,6 @@ query emprestimo verb=POST {
         }
       }
     }
-
     precondition ($reader_age >= $required_age) {
       error_type = "inputerror"
       error = "A faixa etária do exemplar não é compatível com a idade do leitor."
@@ -103,7 +96,6 @@ query emprestimo verb=POST {
       return = {type: "list"}
       output = ["id", "due_at"]
     } as $active_loans
-
     precondition (($active_loans|count) < 2) {
       error_type = "inputerror"
       error = "O leitor já possui o limite de 2 empréstimos ativos."
@@ -114,7 +106,6 @@ query emprestimo verb=POST {
       return = {type: "list"}
       output = ["id"]
     } as $pending_fines
-
     precondition (($pending_fines|count) == 0) {
       error_type = "inputerror"
       error = "O leitor possui multa pendente."
@@ -125,7 +116,6 @@ query emprestimo verb=POST {
       return = {type: "list"}
       output = ["id"]
     } as $overdue_loans
-
     precondition (($overdue_loans|count) == 0) {
       error_type = "inputerror"
       error = "O leitor possui empréstimo em atraso."
@@ -195,7 +185,6 @@ query emprestimo verb=POST {
     renewal_count: $loan_with_code.renewal_count
     status: $loan_with_code.status
   }
-
   tags = ["biblioteca"]
   guid = "create-loan-2026"
 }

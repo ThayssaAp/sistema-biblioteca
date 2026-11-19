@@ -9,6 +9,7 @@ query leitores verb=POST {
     text address filters=trim
     text phone filters=trim
     email email? filters=trim|lower
+    text temporary_password
   }
 
   stack {
@@ -26,6 +27,14 @@ query leitores verb=POST {
     precondition ($input.phone != null && $input.phone != "") {
       error_type = "inputerror"
       error = "O telefone é obrigatório."
+    }
+    precondition ($input.temporary_password != null && $input.temporary_password != "") {
+      error_type = "inputerror"
+      error = "A senha temporária é obrigatória."
+    }
+    precondition (("/^.{8,}$/"|regex_matches:$input.temporary_password) && ("/[A-Za-z]/"|regex_matches:$input.temporary_password) && ("/[0-9]/"|regex_matches:$input.temporary_password)) {
+      error_type = "inputerror"
+      error = "A senha temporária deve ter ao menos 8 caracteres, uma letra e um dígito."
     }
     precondition ($input.birth_date != null && $input.birth_date <= "now") {
       error_type = "inputerror"
@@ -50,6 +59,8 @@ query leitores verb=POST {
         address: $input.address
         phone: $input.phone
         email: $input.email
+        password: $input.temporary_password
+        first_access: true
         created_by: $auth.id
       }
     } as $reader

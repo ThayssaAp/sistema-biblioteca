@@ -34,14 +34,12 @@
         {
           title: "Empréstimos",
           description: "Registro e acompanhamento de empréstimos.",
-          view: "loans",
-          comingSoon: true
+          href: "../emprestimos/index.html?view=loans"
         },
         {
           title: "Multas",
           description: "Consulta e acompanhamento de multas.",
-          view: "fines",
-          comingSoon: true
+          href: "../emprestimos/index.html?view=fines"
         }
       ]
     },
