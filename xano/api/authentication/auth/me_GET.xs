@@ -10,8 +10,13 @@ query "auth/me" verb=GET {
     db.get user {
       field_name = "id"
       field_value = $auth.id
-      output = ["id", "matricula", "name", "cpf", "address", "phone", "role"]
+      output = ["id", "matricula", "name", "cpf", "address", "phone", "role", "active"]
     } as $user
+
+    precondition ($user != null && $user.active != false) {
+      error_type = "accessdenied"
+      error = "Sessão inválida."
+    }
   }
 
   response = $user

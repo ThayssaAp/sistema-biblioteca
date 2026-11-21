@@ -39,8 +39,9 @@ sincronização da `feature/05-gerenciar-adm` na `feature/03-emprestimos-multas`
   atraso e multa, seguida da solicitação de renovação pelo leitor.
 - **Próxima entrega do balcão:** operação de pagamento de multa, com registro
   do operador, data e valor quitado.
-- **Próxima entrega do Admin:** cadastro de funcionários e dashboard com os
-  indicadores definidos neste documento.
+- **Entregas Admin disponíveis:** cadastro e desativação de funcionários,
+  exclusão administrativa de livros e Dashboard com os indicadores definidos
+  neste documento.
 Cada item pendente deve ser implementado em uma Change própria, com contrato
 de backend, interface e testes antes de ser marcado como concluído.
 
