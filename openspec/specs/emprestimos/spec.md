@@ -52,7 +52,7 @@ O sistema SHALL gerar códigos únicos no formato `#EMP000000`, com seis dígito
 - **THEN** o backend ignora ou rejeita o valor e mantém a geração controlada
 
 ### Requirement: Devolução encerra empréstimo e libera exemplar
-O sistema SHALL permitir que Funcionário ou Admin devolva um empréstimo ativo, registrando data e operador da devolução, mudando o status para `Devolvido` e o exemplar para `Disponível`.
+O sistema SHALL permitir que Funcionário ou Admin devolva um empréstimo ativo, registrando data e operador da devolução, mudando o status para `Devolvido`, liberando o exemplar e calculando eventual atraso com a mesma unidade temporal usada pelos timestamps do empréstimo.
 
 #### Scenario: Devolução no prazo
 - **WHEN** operador devolve empréstimo ativo até o vencimento
@@ -61,6 +61,10 @@ O sistema SHALL permitir que Funcionário ou Admin devolva um empréstimo ativo,
 #### Scenario: Empréstimo já devolvido
 - **WHEN** operador tenta devolver empréstimo com status `Devolvido`
 - **THEN** o sistema rejeita a operação sem criar nova devolução ou alterar o exemplar
+
+#### Scenario: Cópias do endpoint alinhadas
+- **WHEN** o fluxo de devolução é executado por qualquer cópia versionada do endpoint
+- **THEN** o status, a liberação do exemplar e os dias de atraso seguem o mesmo contrato observável
 
 ### Requirement: Renovação é única e ocorre por mais 7 dias
 O sistema SHALL permitir uma única renovação de empréstimo ativo e não atrasado, adicionando 7 dias corridos ao vencimento e registrando a origem da solicitação.

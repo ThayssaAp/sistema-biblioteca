@@ -2,11 +2,30 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="refresh" content="0; url=login/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
     <title>Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
-    <p>Abrindo a <a href="login/">tela de login</a>…</p>
+    <main class="page-shell">
+      <section class="access-card" aria-labelledby="page-title">
+        <div class="brand-mark" aria-hidden="true">B</div>
+        <p class="eyebrow">Biblioteca Comunitária</p>
+        <h1 id="page-title">Como você quer acessar?</h1>
+        <p class="intro">Escolha uma opção para entrar no ambiente adequado ao seu perfil.</p>
+
+        <nav class="access-options" aria-label="Tipo de acesso">
+          <a class="access-option access-option-primary" href="./portal-leitor/">
+            <span class="option-title">Sou leitor</span>
+            <span class="option-description">Consulte o catálogo e acompanhe seus empréstimos.</span>
+          </a>
+          <a class="access-option" href="./login/">
+            <span class="option-title">Sou funcionário</span>
+            <span class="option-description">Acesse o atendimento de balcão e a administração.</span>
+          </a>
+        </nav>
+      </section>
+    </main>
   </body>
 </html>
