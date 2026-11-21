@@ -14,6 +14,7 @@ table fine {
     int reader_id {
       table = "reader"
     }
+
     int overdue_days?=0
     int amount_cents?=0
     timestamp generated_at?=now

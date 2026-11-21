@@ -55,8 +55,7 @@
         {
           title: "Exclusão de livro",
           description: "Remoção administrativa de exemplares.",
-          view: "book-deletion",
-          comingSoon: true
+          href: "../catalog/index.html?view=delete-view"
         },
         {
           title: "Dashboard",
@@ -69,10 +68,15 @@
   ]);
 
   const PLACEHOLDERS = Object.freeze({
-    "book-deletion": {
-      title: "Exclusão de livro",
-      description: "A exclusão administrativa de exemplares será disponibilizada em uma próxima etapa.",
-      roles: ["ADMIN"]
+    loans: {
+      title: "Empréstimos",
+      description: "As operações de empréstimo serão disponibilizadas em uma próxima etapa.",
+      roles: ["FUNCIONARIO", "ADMIN"]
+    },
+    fines: {
+      title: "Multas",
+      description: "A consulta e o gerenciamento de multas serão disponibilizados em uma próxima etapa.",
+      roles: ["FUNCIONARIO", "ADMIN"]
     },
     dashboard: {
       title: "Dashboard",

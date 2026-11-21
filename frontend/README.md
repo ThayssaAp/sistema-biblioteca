@@ -6,9 +6,11 @@ A interface é estática e consome a API publicada no Xano. Para iniciar a parti
 python3 -m http.server 8765 --directory frontend
 ```
 
-Abra `http://127.0.0.1:8765/`. A raiz encaminha para a tela de login; após entrar, o sistema valida a sessão e abre o menu principal. Funcionários e Admins podem acessar cadastro/consulta de livros e leitores, além do fluxo de empréstimos e consulta de multas no balcão. A gestão de gêneros aparece apenas para Admin. Exclusão de livros e dashboard ainda são apresentados como **Em breve**.
+Abra `http://127.0.0.1:8765/`. A raiz encaminha para a tela de login; após entrar, o sistema valida a sessão e abre o menu principal. Funcionários e Admins podem acessar cadastro/consulta de livros e leitores, além do fluxo de empréstimos e consulta de multas no balcão. A gestão de gêneros e a retirada justificada de exemplares disponíveis aparecem apenas para Admin. O dashboard continua como **Em breve**.
 
 O Portal do Leitor está disponível em `portal-leitor/`. O leitor entra com CPF e senha temporária fornecida pela biblioteca; no primeiro acesso, precisa definir uma senha própria. Tokens de leitores usam chaves próprias em `sessionStorage` e não são aceitos no fluxo de operadores, assim como tokens de operadores não são aceitos no portal.
+
+Na tela do acervo, as opções **Cadastrar livro** e **Consultar livros** abrem diretamente a tarefa selecionada. O acesso às abas **Gêneros** e **Exclusão de livro** é validado novamente pelo perfil; um Funcionário que tente abrir uma delas retorna à consulta do acervo. A retirada é lógica, exige justificativa, preserva o código e o histórico e não aceita exemplares emprestados.
 
 Para testar somente o visual e o fluxo de telas sem publicar as APIs do Xano, abra `portal-leitor/demo.html`. Essa demonstração usa a senha fictícia `Temp1234` e não salva nem envia credenciais. Para testar a consulta de livros com filtros e dados fictícios, abra `portal-leitor/catalog-demo.html`.
 Para executar a jornada integrada com o Xano, abra `portal-leitor/jornada.html`. Ela exige as credenciais reais de um operador, grava o leitor, faz o primeiro login, troca a senha e consulta o acervo. Use preferencialmente um servidor HTTP local (`python3 -m http.server 8765 --directory frontend`) para evitar restrições do navegador ao abrir arquivos diretamente.
@@ -19,3 +21,5 @@ No Portal do Leitor, a tela `portal-leitor/catalog.html` permite consultar livro
 O servidor Python serve somente os arquivos estáticos e não inicia nem publica o backend.
 
 As URLs públicas das APIs estão configuradas em `login/config.js`, `leitores/config.js` e `portal-leitor/config.js`. O `portal-leitor/config.js` aponta para o grupo de APIs dos leitores, que expõe autenticação, gêneros e livros com `auth = "reader"`. Tokens de operador e leitor são mantidos apenas em `sessionStorage`, em chaves separadas.
+
+O servidor Python serve somente os arquivos estáticos e não inicia nem publica o backend.

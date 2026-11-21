@@ -21,7 +21,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -181,7 +182,8 @@ h1 {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid #b6d8cb;
   outline-offset: 2px;
 }
@@ -237,7 +239,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   min-height: 44px;
   padding: 9px 12px;
@@ -245,6 +248,35 @@ select {
   border-radius: 8px;
   background: #fff;
   color: #202a26;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+dialog {
+  width: min(520px, calc(100% - 32px));
+  max-width: 100%;
+  padding: 24px;
+  border: 1px solid #cbd3ce;
+  border-radius: 8px;
+  background: #fff;
+  color: #202a26;
+  box-shadow: 0 20px 60px rgb(32 42 38 / 24%);
+}
+
+dialog::backdrop {
+  background: rgb(25 61 52 / 45%);
+}
+
+#delete-form {
+  display: grid;
+  gap: 16px;
 }
 
 small,

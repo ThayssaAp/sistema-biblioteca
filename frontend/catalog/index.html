@@ -34,6 +34,7 @@
           <button type="button" class="nav-button" data-view="search-view" aria-pressed="true">Consultar acervo</button>
           <button type="button" class="nav-button" data-view="create-view" aria-pressed="false">Cadastrar exemplar</button>
           <button id="genres-tab" type="button" class="nav-button" data-view="genres-view" aria-pressed="false" hidden>Gêneros</button>
+          <button id="delete-tab" type="button" class="nav-button" data-view="delete-view" aria-pressed="false" hidden>Exclusão de livro</button>
         </nav>
 
         <p id="page-status" class="status" role="status" aria-live="polite"></p>
@@ -139,7 +140,57 @@
           </form>
           <ul id="genre-list" class="genre-list"></ul>
         </section>
+
+        <section id="delete-view" class="task-view" aria-labelledby="delete-title" hidden>
+          <h2 id="delete-title">Retirar exemplar do acervo</h2>
+          <p>Somente exemplares disponíveis podem ser retirados. O registro e o código serão mantidos para histórico.</p>
+          <form id="delete-search-form" class="search-form">
+            <div class="field">
+              <label for="delete-filter-code">Código do exemplar</label>
+              <input id="delete-filter-code" name="code" type="search" placeholder="#ADS0001" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="delete-filter-title">Título</label>
+              <input id="delete-filter-title" name="title" type="search" autocomplete="off">
+            </div>
+            <div class="form-actions">
+              <button class="primary-button" type="submit">Pesquisar exemplares disponíveis</button>
+              <button id="clear-delete-filters" class="secondary-button" type="button">Limpar filtros</button>
+            </div>
+          </form>
+          <div class="table-wrap">
+            <table>
+              <caption class="visually-hidden">Exemplares disponíveis para retirada administrativa</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Código</th>
+                  <th scope="col">Título</th>
+                  <th scope="col">Gênero</th>
+                  <th scope="col">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="delete-books-list"></tbody>
+            </table>
+          </div>
+          <p id="delete-empty-state" class="empty-state" hidden>Nenhum exemplar disponível encontrado.</p>
+        </section>
       </section>
     </main>
+
+    <dialog id="delete-dialog" aria-labelledby="delete-dialog-title">
+      <form id="delete-form">
+        <h2 id="delete-dialog-title">Confirmar retirada</h2>
+        <p id="delete-book-label"></p>
+        <div class="field">
+          <label for="delete-reason">Justificativa</label>
+          <textarea id="delete-reason" name="reason" rows="4" maxlength="500" required></textarea>
+          <small>Obrigatória, até 500 caracteres.</small>
+        </div>
+        <div class="form-actions">
+          <button class="primary-button" type="submit">Confirmar retirada</button>
+          <button id="cancel-delete" class="secondary-button" type="button">Cancelar</button>
+        </div>
+      </form>
+    </dialog>
   </body>
 </html>
