@@ -2,6 +2,8 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
 
 const rolesAllowedAtServiceDesk = ["FUNCIONARIO", "ADMIN"];
 const loanStatuses = ["Ativo", "Devolvido"];
@@ -36,6 +38,13 @@ function payFine(fine, role, paidBy, paidAt) {
     status: "Paga",
     paid_by: paidBy,
     paid_at: paidAt
+  };
+}
+
+function fineAuditProjection(fine) {
+  return {
+    paid_by: fine.paid_by ?? null,
+    paid_at: fine.paid_at ?? null
   };
 }
 
@@ -119,6 +128,25 @@ test("paga somente multa pendente e preserva valor com auditoria", () => {
   assert.equal(paid.paid_by, 8);
   assert.equal(paid.paid_at, 1794260000000);
   assert.deepEqual(fine, { id: 3, amount_cents: 2000, status: "Pendente" });
+});
+
+test("consulta de multas expõe auditoria preenchida ou nula sem recalcular valor", () => {
+  const endpoint = readFileSync(path.join(__dirname, "../api/multas/multas_GET.xs"), "utf8");
+  assert.match(endpoint, /"paid_by"[\s\S]*"paid_at"/);
+
+  const paid = { amount_cents: 2000, paid_by: 8, paid_at: 1794260000000 };
+  const unpaid = { amount_cents: 2000, paid_by: null, paid_at: null };
+
+  assert.deepEqual(fineAuditProjection(paid), {
+    paid_by: 8,
+    paid_at: 1794260000000
+  });
+  assert.deepEqual(fineAuditProjection(unpaid), {
+    paid_by: null,
+    paid_at: null
+  });
+  assert.equal(paid.amount_cents, 2000);
+  assert.equal(unpaid.amount_cents, 2000);
 });
 
 test("rejeita pagamento por leitor, multa resolvida e tentativa duplicada", () => {

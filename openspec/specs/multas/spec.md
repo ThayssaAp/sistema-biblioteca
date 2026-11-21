@@ -56,11 +56,11 @@ O sistema SHALL impedir novo empréstimo e renovação quando o leitor possuir m
 - **THEN** o sistema não bloqueia a operação por motivo financeiro
 
 ### Requirement: Consulta de multas informa a situação do balcão
-O sistema SHALL permitir que Funcionário e Admin consultem multas por leitor, empréstimo e status, retornando somente dados necessários ao atendimento e sem expor credenciais.
+O sistema SHALL permitir que Funcionário e Admin consultem multas por leitor, empréstimo e status, retornando os dados necessários ao atendimento, incluindo valor, situação e auditoria de pagamento quando disponível, sem expor credenciais.
 
 #### Scenario: Consulta de multas do leitor
 - **WHEN** operador consulta multas por CPF de leitor
-- **THEN** o sistema retorna multas vinculadas ao leitor com empréstimo, valor, dias de atraso, data e status
+- **THEN** o sistema retorna multas vinculadas ao leitor com empréstimo, valor, dias de atraso, data, status, operador do pagamento e data/hora do pagamento quando informados
 
 #### Scenario: Consulta sem resultados
 - **WHEN** leitor não possui multas correspondentes ao filtro
@@ -69,6 +69,10 @@ O sistema SHALL permitir que Funcionário e Admin consultem multas por leitor, e
 #### Scenario: Consulta sem autenticação
 - **WHEN** requisição não apresenta credencial válida de operador
 - **THEN** o sistema rejeita o acesso sem retornar multas
+
+#### Scenario: Multa ainda não paga
+- **WHEN** operador consulta uma multa com status `Pendente`, `Abonada` ou `Zerada`
+- **THEN** o sistema retorna `paid_by` e `paid_at` nulos, sem inventar uma auditoria de pagamento
 
 ### Requirement: Interface apresenta multas e bloqueios com clareza
 A interface SHALL apresentar o valor e o motivo da multa no fluxo de devolução e na consulta de multas, usando mensagens textuais e estados acessíveis.

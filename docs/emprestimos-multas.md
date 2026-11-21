@@ -198,6 +198,8 @@ node --test xano/tests/emprestimos-multas.test.js
 ```
 
 O fluxo manual validado no ambiente publicado cobriu criação, consulta,
-renovação única, devolução, liberação do exemplar e geração de multa pendente.
-O pagamento de multa deve ser validado após a publicação do endpoint no grupo
-`Multas`, incluindo a preservação do valor e da auditoria.
+renovação única, devolução, liberação do exemplar, geração de multa pendente e
+registro de pagamento no balcão. A consulta de multas retorna `paid_by` e
+`paid_at`, nulos quando não houve pagamento e preenchidos quando a quitação foi
+registrada. Alterações futuras devem passar por dry-run antes de qualquer push
+no workspace Xano.
