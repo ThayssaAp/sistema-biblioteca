@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Dashboard | Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="../login/config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../menu/index.html" aria-label="Menu principal da Biblioteca Comunitária">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span>Menu principal</span>
+      </a>
+      <div class="session-actions">
+        <span id="operator-label"></span>
+        <button id="logout-button" class="text-button" type="button">Encerrar sessão</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="dashboard-shell" aria-labelledby="page-title">
+        <div class="page-heading">
+          <p class="eyebrow">Área do administrador</p>
+          <h1 id="page-title">Dashboard</h1>
+          <p>Indicadores gerais da biblioteca.</p>
+        </div>
+
+        <p id="page-status" class="status" role="status" aria-live="polite">Aguarde enquanto carregamos os indicadores.</p>
+        <button id="retry-button" class="secondary-button" type="button" hidden>Tentar novamente</button>
+
+        <section id="dashboard-content" class="metrics-grid" aria-label="Indicadores da biblioteca" hidden>
+          <article class="metric-card"><span class="metric-label">Leitores cadastrados</span><strong id="metric-total-readers" class="metric-value">0</strong></article>
+          <article class="metric-card"><span class="metric-label">Leitores com empréstimos ativos</span><strong id="metric-readers-active" class="metric-value">0</strong></article>
+          <article class="metric-card"><span class="metric-label">Livros disponíveis</span><strong id="metric-available-books" class="metric-value">0</strong></article>
+          <article class="metric-card"><span class="metric-label">Livros emprestados</span><strong id="metric-borrowed-books" class="metric-value">0</strong></article>
+          <article class="metric-card"><span class="metric-label">Empréstimos em atraso</span><strong id="metric-overdue-loans" class="metric-value">0</strong></article>
+          <article class="metric-card"><span class="metric-label">Multas pendentes</span><strong id="metric-pending-fines" class="metric-value">0</strong></article>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
