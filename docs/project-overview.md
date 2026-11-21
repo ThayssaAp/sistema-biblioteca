@@ -17,12 +17,32 @@ A biblioteca comunitária necessita controlar empréstimos e acervo no balcão s
 - **Leitor:** Possui uma conta separada das contas de Funcionário/Admin e acessa o Portal do Leitor para consultar livros disponíveis, visualizar os próprios empréstimos ativos, vencimentos e histórico, e solicitar renovações.
 
 ## 5. Escopo Expandido
-- **Balcão:** Autenticação de operadores (matrícula/senha), cadastro/consulta de exemplares (`#ADS0000`), cadastro de leitores (CPF), empréstimos orientados (`#EMP000000`), devoluções, solicitações de renovação e cálculo de multas por dias corridos iniciados de atraso.
+- **Sistema Balcão:** Autenticação de operadores (matrícula/senha), consulta de acervo, cadastro de livros (`#ADS0000`), cadastro de leitores (CPF), criação de empréstimos (`#EMP000000`) e pagamento de multas. O atendimento também mantém devoluções, consulta de empréstimos e cálculo de multas por dias corridos iniciados de atraso.
 - **Contas:** As contas de leitores são separadas das contas de Funcionário/Admin. No cadastro do leitor, Funcionário/Admin define uma senha inicial genérica, igual para todos os leitores; a troca é obrigatória no primeiro acesso ao Portal do Leitor. Essa simplificação atende ao trabalho acadêmico, mas as senhas devem ser armazenadas com hash, nunca em texto puro.
-- **Portal do Leitor:** Acesso restrito a leitores cadastrados, com autenticação por CPF e senha, consulta de livros disponíveis, visualização dos próprios empréstimos ativos, vencimentos e histórico, e solicitação de renovação (1 uso por empréstimo).
+- **Portal do Leitor:** Acesso restrito a leitores cadastrados, com autenticação por CPF e senha, consulta de livros disponíveis, visualização dos próprios empréstimos, data de expiração, multas e histórico, além da solicitação de renovação (1 uso por empréstimo).
+- **Área do Admin:** Reúne todas as opções do Funcionário e acrescenta adição, alteração e exclusão de gêneros, exclusão administrativa de livros, cadastro de funcionários e dashboard.
 - **Dashboard do Admin:** Exibe somente o total de leitores cadastrados, a quantidade de leitores com livros emprestados, as quantidades de livros disponíveis e emprestados, e a quantidade de empréstimos em atraso e de multas. Não inclui rankings de popularidade nem painel de atrasos críticos.
 - **Empréstimos e multas:** O empréstimo vence após 7 dias corridos (por exemplo, uma retirada na quarta-feira vence na quarta-feira seguinte). É permitida uma renovação por empréstimo, por mais 7 dias corridos, solicitada pelo Portal do Leitor ou pelo sistema do Funcionário. O leitor não pode renovar um empréstimo se tiver multa em outro livro. A multa é de R$ 10,00 por dia corrido iniciado de atraso, começando no dia seguinte ao vencimento.
 - **Gerenciamento Admin:** Exclusão restrita de exemplares, abono de multas e edição de gêneros.
+
+## 5.1 Status e próxima sequência de entrega
+
+O desenvolvimento segue entregas verticais por Change. A situação após a
+sincronização da `feature/05-gerenciar-adm` na `feature/03-emprestimos-multas`
+é:
+
+- **Disponível:** consulta e cadastro de livros, cadastro e consulta de
+  leitores, criação/consulta/devolução/renovação de empréstimos no balcão,
+  consulta de multas, autenticação do Portal do Leitor, consulta de livros no
+  Portal e exclusão administrativa de exemplares.
+- **Próxima entrega do Portal:** tela de meus empréstimos com vencimento,
+  atraso e multa, seguida da solicitação de renovação pelo leitor.
+- **Próxima entrega do balcão:** operação de pagamento de multa, com registro
+  do operador, data e valor quitado.
+- **Próxima entrega do Admin:** cadastro de funcionários e dashboard com os
+  indicadores definidos neste documento.
+Cada item pendente deve ser implementado em uma Change própria, com contrato
+de backend, interface e testes antes de ser marcado como concluído.
 
 ## 6. Fora do Escopo
 - Localização física das estantes/prateleiras nos livros.
