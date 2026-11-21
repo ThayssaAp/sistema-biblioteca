@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Funcionários | Biblioteca Comunitária</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="../login/config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../menu/index.html" aria-label="Menu principal da Biblioteca Comunitária">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span>Menu principal</span>
+      </a>
+      <div class="session-actions">
+        <span id="operator-label"></span>
+        <button id="logout-button" class="text-button" type="button">Encerrar sessão</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="admin-shell" aria-labelledby="page-title">
+        <div class="page-heading">
+          <p class="eyebrow">Área do administrador</p>
+          <h1 id="page-title">Gerenciar funcionários</h1>
+          <p>Cadastre operadores e mantenha perfis e acessos.</p>
+        </div>
+
+        <nav class="task-nav" aria-label="Ações de funcionários">
+          <button type="button" class="nav-button" data-view="list-view" aria-pressed="true">Consultar</button>
+          <button type="button" class="nav-button" data-view="create-view" aria-pressed="false">Cadastrar</button>
+        </nav>
+
+        <p id="page-status" class="status" role="status" aria-live="polite"></p>
+
+        <section id="create-view" class="task-view" aria-labelledby="create-title" hidden>
+          <h2 id="create-title">Cadastrar operador</h2>
+          <form id="operator-form" novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="matricula">Matrícula</label><input id="matricula" name="matricula" maxlength="30" required></div>
+              <div class="field"><label for="name">Nome</label><input id="name" name="name" maxlength="120" autocomplete="name" required></div>
+              <div class="field"><label for="cpf">CPF</label><input id="cpf" name="cpf" inputmode="numeric" maxlength="14" autocomplete="off" required></div>
+              <div class="field"><label for="phone">Telefone</label><input id="phone" name="phone" inputmode="tel" maxlength="20" autocomplete="tel" required></div>
+              <div class="field full"><label for="address">Endereço</label><input id="address" name="address" maxlength="200" autocomplete="street-address" required></div>
+              <div class="field"><label for="email">E-mail <span class="optional">(opcional)</span></label><input id="email" name="email" type="email" autocomplete="email"></div>
+              <div class="field"><label for="password">Senha inicial</label><input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required></div>
+              <div class="field"><label for="role">Perfil</label><select id="role" name="role" required><option value="FUNCIONARIO">Funcionário</option><option value="ADMIN">Admin</option></select></div>
+            </div>
+            <div class="form-actions">
+              <button id="create-submit" class="primary-button" type="submit">Cadastrar funcionário</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="list-view" class="task-view" aria-labelledby="list-title">
+          <h2 id="list-title">Operadores cadastrados</h2>
+          <form id="search-form" class="search-form">
+            <div class="field"><label for="filter-matricula">Matrícula</label><input id="filter-matricula" name="matricula" autocomplete="off"></div>
+            <div class="field"><label for="filter-name">Nome</label><input id="filter-name" name="name" autocomplete="off"></div>
+            <div class="field"><label for="filter-role">Perfil</label><select id="filter-role" name="role"><option value="">Todos</option><option value="FUNCIONARIO">Funcionário</option><option value="ADMIN">Admin</option></select></div>
+            <button class="primary-button" type="submit">Pesquisar</button>
+          </form>
+          <div class="table-wrap">
+            <table>
+              <caption class="visually-hidden">Operadores encontrados</caption>
+              <thead><tr><th>Matrícula</th><th>Nome</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="operators-list"></tbody>
+            </table>
+          </div>
+          <p id="empty-state" class="empty-state" hidden>Nenhum operador encontrado.</p>
+          <div class="pagination">
+            <button id="previous-page" class="secondary-button" type="button" disabled>Anterior</button>
+            <span id="page-label" aria-live="polite"></span>
+            <button id="next-page" class="secondary-button" type="button" disabled>Próxima</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="deactivate-dialog" aria-labelledby="deactivate-title">
+      <form id="deactivate-form" method="dialog">
+        <h2 id="deactivate-title">Desativar operador</h2>
+        <p id="deactivate-label"></p>
+        <div class="field"><label for="deactivate-reason">Justificativa</label><textarea id="deactivate-reason" name="reason" maxlength="500" required></textarea></div>
+        <div class="form-actions">
+          <button id="confirm-deactivate" class="danger-button" type="submit">Desativar</button>
+          <button id="cancel-deactivate" class="secondary-button" type="button">Cancelar</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

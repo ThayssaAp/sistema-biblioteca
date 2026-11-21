@@ -27,6 +27,13 @@ table user {
       values = ["FUNCIONARIO", "ADMIN"]
       visibility = "private"
     }
+
+    bool? active?=true
+    timestamp? deactivated_at
+    int? deactivated_by {
+      table = "user"
+    }
+    text? deactivation_reason
   
     object password_reset? {
       schema {
@@ -49,6 +56,7 @@ table user {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "created_at", op: "desc"}]}
     {type: "btree|unique", field: [{name: "matricula", op: "asc"}]}
+    {type: "btree|unique", field: [{name: "cpf", op: "asc"}]}
     {type: "btree|unique", field: [{name: "email", op: "asc"}]}
   ]
 
