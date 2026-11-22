@@ -132,6 +132,11 @@
         if (!response.ok) throw new Error("BOOKS_REQUEST_FAILED");
         return readJson(response);
       },
+      async listLoans() {
+        const response = await call("/emprestimos");
+        if (!response.ok) throw new Error("LOANS_REQUEST_FAILED");
+        return readJson(response);
+      },
       clear
     });
   }
@@ -310,6 +315,98 @@
     });
   }
 
+  function setupLoans(document, client, storage, location) {
+    const results = document.getElementById("loans-list");
+    if (!results) return;
+    const status = document.getElementById("loans-status");
+    const retry = document.getElementById("loans-retry");
+
+    function formatDate(value) {
+      if (!value) return "Não informado";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "Não informado" : date.toLocaleDateString("pt-BR");
+    }
+
+    function isOverdue(loan) {
+      if (loan.status !== "Ativo" || !loan.due_at) return false;
+      const dueAt = new Date(loan.due_at).getTime();
+      return Number.isFinite(dueAt) && dueAt < Date.now();
+    }
+
+    function render(loans) {
+      results.replaceChildren();
+      if (!loans.length) {
+        status.textContent = "Você ainda não possui empréstimos.";
+        status.dataset.state = "empty";
+        return;
+      }
+      status.textContent = `${loans.length} empréstimo(s) encontrado(s).`;
+      status.dataset.state = "success";
+      loans.forEach((loan) => {
+        const item = document.createElement("article");
+        item.className = "loan-card";
+        const title = document.createElement("h2");
+        title.textContent = loan.book_title || "Livro não informado";
+        const details = document.createElement("p");
+        details.textContent = `${loan.code || "Empréstimo sem código"} · Retirada: ${formatDate(loan.borrowed_at)} · Vencimento: ${formatDate(loan.due_at)}`;
+        const state = document.createElement("p");
+        state.textContent = isOverdue(loan)
+          ? "Situação: atrasado"
+          : `Situação: ${loan.status || "não informada"}`;
+        item.append(title, details, state);
+
+        if (loan.returned_at) {
+          const returned = document.createElement("p");
+          returned.textContent = `Devolução: ${formatDate(loan.returned_at)}`;
+          item.appendChild(returned);
+        }
+        if (loan.fine_id) {
+          const fine = document.createElement("p");
+          const amount = Number.isInteger(loan.fine_amount_cents)
+            ? `R$ ${(loan.fine_amount_cents / 100).toFixed(2).replace(".", ",")}`
+            : "valor não informado";
+          fine.textContent = `Multa: ${amount} · Status: ${loan.fine_status || "não informado"}`;
+          item.appendChild(fine);
+        }
+        results.appendChild(item);
+      });
+    }
+
+    async function load() {
+      status.dataset.state = "loading";
+      status.textContent = "Consultando seus empréstimos...";
+      retry.hidden = true;
+      try {
+        const loans = await client.listLoans();
+        if (!Array.isArray(loans)) throw new Error("INVALID_API_RESPONSE");
+        render(loans);
+      } catch (error) {
+        if (error.message !== "SESSION_INVALID") {
+          status.dataset.state = "error";
+          status.textContent = "Não foi possível consultar seus empréstimos. Tente novamente.";
+          retry.hidden = false;
+        }
+      }
+    }
+
+    document.getElementById("logout-link")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      client.clear();
+      location.replace(LOGIN_URL);
+    });
+    retry.addEventListener("click", load);
+    if (!storage.getItem(TOKEN_KEY) || storage.getItem(PENDING_KEY) === "true") {
+      location.replace(storage.getItem(PENDING_KEY) === "true" ? CHANGE_URL : LOGIN_URL);
+      return;
+    }
+    Promise.all([client.currentReader(), load()]).catch(() => {
+      if (storage.getItem(TOKEN_KEY)) {
+        status.dataset.state = "error";
+        status.textContent = "Não foi possível validar sua sessão.";
+      }
+    });
+  }
+
   const api = Object.freeze({
     normalizeCpf,
     formatCpf,
@@ -319,6 +416,7 @@
     createClient,
     setupHome,
     setupCatalog,
+    setupLoans,
     storageKeys: Object.freeze({ token: TOKEN_KEY, reader: READER_KEY, pending: PENDING_KEY })
   });
   if (typeof module !== "undefined" && module.exports) module.exports = api;
@@ -337,4 +435,5 @@
   setupPasswordChange(root.document, client, root.location);
   setupHome(root.document, client, storage, root.location);
   setupCatalog(root.document, client, storage, root.location);
+  setupLoans(root.document, client, storage, root.location);
 })(globalThis);

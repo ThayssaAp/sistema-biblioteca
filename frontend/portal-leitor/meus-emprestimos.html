@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f5c4d">
+    <title>Meus empréstimos | Portal do Leitor</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="card" aria-labelledby="page-title">
+        <p class="eyebrow">Portal do Leitor</p>
+        <h1 id="page-title">Meus empréstimos</h1>
+        <p class="intro">Acompanhe seus prazos, devoluções e multas registradas.</p>
+        <p id="loans-status" class="status" role="status" aria-live="polite">Carregando...</p>
+        <div id="loans-list" class="loans-list"></div>
+        <button id="loans-retry" class="secondary-button retry-button" type="button" hidden>Tentar novamente</button>
+        <nav class="links" aria-label="Navegação">
+          <a href="./home.html">Voltar ao início</a>
+          <a id="logout-link" href="./index.html">Sair</a>
+        </nav>
+      </section>
+    </main>
+  </body>
+</html>

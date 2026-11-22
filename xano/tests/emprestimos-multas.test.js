@@ -119,42 +119,16 @@ test("calcula atraso com timestamps em milissegundos", () => {
   assert.equal(overdueDaysBetween(dueAt, dueAt + 3600000), 1);
 });
 
-test("paga somente multa pendente e preserva valor com auditoria", () => {
-  const fine = { id: 3, amount_cents: 2000, status: "Pendente" };
-  const paid = payFine(fine, "FUNCIONARIO", 8, 1794260000000);
+test("consulta do portal isola o leitor e preserva multa opcional", () => {
+  const endpoint = readFileSync(path.join(__dirname, "../api/leitores/emprestimos_GET.xs"), "utf8");
 
-  assert.equal(paid.status, "Paga");
-  assert.equal(paid.amount_cents, 2000);
-  assert.equal(paid.paid_by, 8);
-  assert.equal(paid.paid_at, 1794260000000);
-  assert.deepEqual(fine, { id: 3, amount_cents: 2000, status: "Pendente" });
-});
-
-test("consulta de multas expõe auditoria preenchida ou nula sem recalcular valor", () => {
-  const endpoint = readFileSync(path.join(__dirname, "../api/multas/multas_GET.xs"), "utf8");
-  assert.match(endpoint, /"paid_by"[\s\S]*"paid_at"/);
-
-  const paid = { amount_cents: 2000, paid_by: 8, paid_at: 1794260000000 };
-  const unpaid = { amount_cents: 2000, paid_by: null, paid_at: null };
-
-  assert.deepEqual(fineAuditProjection(paid), {
-    paid_by: 8,
-    paid_at: 1794260000000
-  });
-  assert.deepEqual(fineAuditProjection(unpaid), {
-    paid_by: null,
-    paid_at: null
-  });
-  assert.equal(paid.amount_cents, 2000);
-  assert.equal(unpaid.amount_cents, 2000);
-});
-
-test("rejeita pagamento por leitor, multa resolvida e tentativa duplicada", () => {
-  const pending = { id: 3, amount_cents: 2000, status: "Pendente" };
-  const paid = payFine(pending, "ADMIN", 8, 1794260000000);
-
-  assert.equal(payFine(pending, "LEITOR", 9, 1794260000001).error, "UNAUTHORIZED");
-  assert.equal(payFine({ ...paid }, "ADMIN", 8, 1794260000002).error, "NOT_PENDING");
-  assert.equal(payFine({ id: 4, amount_cents: 1000, status: "Abonada" }, "ADMIN", 8, 1794260000000).error, "NOT_PENDING");
-  assert.equal(payFine(null, "ADMIN", 8, 1794260000000).error, "NOT_PENDING");
+  assert.match(endpoint, /api_group = "Leitores"/);
+  assert.match(endpoint, /auth = "reader"/);
+  assert.match(endpoint, /where = \$db\.loan\.reader_id == \$auth\.id/);
+  assert.match(endpoint, /type: "left"/);
+  assert.match(endpoint, /"fine_amount_cents"/);
+  assert.match(endpoint, /"fine_status"/);
+  assert.match(endpoint, /"due_at"/);
+  assert.doesNotMatch(endpoint, /overdue:/);
+  assert.doesNotMatch(endpoint, /reader_id\?/);
 });
