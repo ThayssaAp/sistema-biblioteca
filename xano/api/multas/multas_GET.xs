@@ -56,6 +56,8 @@ query multas verb=GET {
         "resolved_by"
         "resolved_at"
         "resolution_notes"
+        "paid_by"
+        "paid_at"
       ]
     } as $fines
   }

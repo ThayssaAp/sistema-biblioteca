@@ -2,6 +2,8 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
 
 const rolesAllowedAtServiceDesk = ["FUNCIONARIO", "ADMIN"];
 const loanStatuses = ["Ativo", "Devolvido"];
@@ -26,6 +28,24 @@ function fineAmountCents(overdueDays) {
 function overdueDaysBetween(dueAt, returnedAt) {
   if (returnedAt <= dueAt) return 0;
   return Math.ceil((returnedAt - dueAt) / 86400000);
+}
+
+function payFine(fine, role, paidBy, paidAt) {
+  if (!canOperateAtServiceDesk(role)) return { error: "UNAUTHORIZED" };
+  if (!fine || fine.status !== "Pendente") return { error: "NOT_PENDING" };
+  return {
+    ...fine,
+    status: "Paga",
+    paid_by: paidBy,
+    paid_at: paidAt
+  };
+}
+
+function fineAuditProjection(fine) {
+  return {
+    paid_by: fine.paid_by ?? null,
+    paid_at: fine.paid_at ?? null
+  };
 }
 
 test("permite operações de balcão somente para Funcionário e Admin", () => {
@@ -97,4 +117,44 @@ test("calcula atraso com timestamps em milissegundos", () => {
   assert.equal(overdueDaysBetween(dueAt, dueAt + 86400000), 1);
   assert.equal(overdueDaysBetween(dueAt, dueAt + (3 * 86400000)), 3);
   assert.equal(overdueDaysBetween(dueAt, dueAt + 3600000), 1);
+});
+
+test("paga somente multa pendente e preserva valor com auditoria", () => {
+  const fine = { id: 3, amount_cents: 2000, status: "Pendente" };
+  const paid = payFine(fine, "FUNCIONARIO", 8, 1794260000000);
+
+  assert.equal(paid.status, "Paga");
+  assert.equal(paid.amount_cents, 2000);
+  assert.equal(paid.paid_by, 8);
+  assert.equal(paid.paid_at, 1794260000000);
+  assert.deepEqual(fine, { id: 3, amount_cents: 2000, status: "Pendente" });
+});
+
+test("consulta de multas expõe auditoria preenchida ou nula sem recalcular valor", () => {
+  const endpoint = readFileSync(path.join(__dirname, "../api/multas/multas_GET.xs"), "utf8");
+  assert.match(endpoint, /"paid_by"[\s\S]*"paid_at"/);
+
+  const paid = { amount_cents: 2000, paid_by: 8, paid_at: 1794260000000 };
+  const unpaid = { amount_cents: 2000, paid_by: null, paid_at: null };
+
+  assert.deepEqual(fineAuditProjection(paid), {
+    paid_by: 8,
+    paid_at: 1794260000000
+  });
+  assert.deepEqual(fineAuditProjection(unpaid), {
+    paid_by: null,
+    paid_at: null
+  });
+  assert.equal(paid.amount_cents, 2000);
+  assert.equal(unpaid.amount_cents, 2000);
+});
+
+test("rejeita pagamento por leitor, multa resolvida e tentativa duplicada", () => {
+  const pending = { id: 3, amount_cents: 2000, status: "Pendente" };
+  const paid = payFine(pending, "ADMIN", 8, 1794260000000);
+
+  assert.equal(payFine(pending, "LEITOR", 9, 1794260000001).error, "UNAUTHORIZED");
+  assert.equal(payFine({ ...paid }, "ADMIN", 8, 1794260000002).error, "NOT_PENDING");
+  assert.equal(payFine({ id: 4, amount_cents: 1000, status: "Abonada" }, "ADMIN", 8, 1794260000000).error, "NOT_PENDING");
+  assert.equal(payFine(null, "ADMIN", 8, 1794260000000).error, "NOT_PENDING");
 });
