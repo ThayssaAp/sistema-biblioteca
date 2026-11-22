@@ -24,6 +24,7 @@ query "auth/login" verb=POST {
         "password"
         "role"
         "account_id"
+        "active"
       ]
     } as $user
   
@@ -39,6 +40,11 @@ query "auth/login" verb=POST {
     } as $pass_result
   
     precondition ($pass_result) {
+      error_type = "accessdenied"
+      error = "Matrícula ou senha inválida."
+    }
+
+    precondition ($user.active != false) {
       error_type = "accessdenied"
       error = "Matrícula ou senha inválida."
     }

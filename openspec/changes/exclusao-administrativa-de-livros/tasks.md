@@ -3,7 +3,7 @@
 ## 1. Backend Xano: retirada lógica de exemplares
 
 - [x] 1.1 Adicionar ao exemplar os campos opcionais `deleted_at`, `deleted_by` e `deletion_reason`; validar o XanoScript e confirmar que exemplares existentes permanecem ativos e que o código não é removido.
-- [ ] 1.2 Implementar `DELETE /books` com autorização `ADMIN`, justificativa aparada, bloqueio para empréstimo ativo/retirada repetida, tombstone e auditoria transacionais, e zeramento de multas `Pendente`; atualizar a API de empréstimo para rejeitar tombstones. Validar XanoScript e os cenários de autorização, motivo inválido, livro emprestado, multas zeradas e empréstimo de retirado rejeitado.
+- [x] 1.2 Implementar `DELETE /books` com autorização `ADMIN`, justificativa aparada, bloqueio para empréstimo ativo/retirada repetida, tombstone e auditoria transacionais, e zeramento de multas `Pendente`; atualizar a API de empréstimo para rejeitar tombstones. Validar XanoScript e os cenários de autorização, motivo inválido, livro emprestado, multas zeradas e empréstimo de retirado rejeitado.
 - [x] 1.3 Atualizar `GET /books` para excluir tombstones de todos os resultados padrão, mantendo filtros atuais; validar XanoScript e consulta combinada com livros ativos e retirados.
 
 ## 2. Interface: fluxo administrativo de exclusão
@@ -15,4 +15,3 @@
 ## 3. Verificação integrada
 
 - [x] 3.1 Executar validação XanoScript de todas as fontes alteradas e testes focados do backend/UI; revisar o diff para confirmar retenção de histórico, autorização no servidor e ausência de dados fictícios.
-

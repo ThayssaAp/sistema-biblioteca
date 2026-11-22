@@ -5,7 +5,7 @@ query "books" verb=DELETE {
 
   input {
     int book_id
-    text reason filters=trim|max:500
+    text reason filters=trim
   }
 
   stack {
@@ -22,6 +22,11 @@ query "books" verb=DELETE {
     precondition ($input.reason != "") {
       error_type = "inputerror"
       error = "A justificativa é obrigatória."
+    }
+
+    precondition (($input.reason|strlen) <= 500) {
+      error_type = "inputerror"
+      error = "A justificativa deve ter no máximo 500 caracteres."
     }
 
     db.get book {

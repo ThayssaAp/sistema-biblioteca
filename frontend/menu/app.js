@@ -58,10 +58,14 @@
           href: "../catalog/index.html?view=delete-view"
         },
         {
+          title: "Funcionários",
+          description: "Cadastre e gerencie operadores do balcão.",
+          href: "../funcionarios/index.html"
+        },
+        {
           title: "Dashboard",
           description: "Indicadores da biblioteca.",
-          view: "dashboard",
-          comingSoon: true
+          href: "../dashboard/index.html"
         }
       ]
     }
@@ -77,11 +81,6 @@
       title: "Multas",
       description: "A consulta e o gerenciamento de multas serão disponibilizados em uma próxima etapa.",
       roles: ["FUNCIONARIO", "ADMIN"]
-    },
-    dashboard: {
-      title: "Dashboard",
-      description: "Os indicadores administrativos serão disponibilizados em uma próxima etapa.",
-      roles: ["ADMIN"]
     }
   });
 
@@ -99,6 +98,12 @@
 
   function resolveMenuView(view, role) {
     if (!view) {
+      return { type: "menu" };
+    }
+    if (view === "dashboard") {
+      if (role !== "ADMIN") {
+        return { type: "menu", message: "Esta opção está disponível somente para Admin." };
+      }
       return { type: "menu" };
     }
     const placeholder = PLACEHOLDERS[view];

@@ -133,6 +133,17 @@ test("book deletion payload normalizes the identifier and justification", () => 
   });
 });
 
+test("book deletion payload rejects empty and oversized justification", () => {
+  assert.throws(
+    () => bookDeletionPayload("7", "   "),
+    { message: "DELETION_REASON_INVALID" }
+  );
+  assert.throws(
+    () => bookDeletionPayload("7", "a".repeat(501)),
+    { message: "DELETION_REASON_INVALID" }
+  );
+});
+
 test("book form payload trims text and converts numeric fields", () => {
   const payload = bookPayloadFromEntries([
     ["title", "  Duna  "],
@@ -263,6 +274,8 @@ test("book deletion is an audited tombstone protected by backend role checks", (
   assert.match(table, /text\? deletion_reason/);
   assert.match(removeApi, /auth = "user"/);
   assert.match(removeApi, /required_role: "ADMIN"/);
+  assert.match(removeApi, /\$input\.reason != ""/);
+  assert.match(removeApi, /\(\$input\.reason\|strlen\) <= 500/);
   assert.match(removeApi, /\$book\.status == "Disponível"/);
   assert.match(removeApi, /deleted_at: "now"/);
   assert.match(removeApi, /action: "book_delete"/);
@@ -329,6 +342,10 @@ test("catalog UI maps genre-specific and generic failures to text messages", () 
   assert.equal(
     actionErrorMessage(new Error("BOOK_UNAVAILABLE")),
     "Não é possível retirar um exemplar emprestado ou já retirado."
+  );
+  assert.equal(
+    actionErrorMessage(new Error("DELETION_REASON_INVALID")),
+    "A justificativa deve ter entre 1 e 500 caracteres."
   );
 });
 

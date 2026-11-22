@@ -1,73 +1,82 @@
-// For admin to update the role of a user on the same account
+// Admin updates another operator's role.
 query "admin/user_role" verb=POST {
-  api_group = "Members & Accounts"
+  api_group = "Authentication"
   auth = "user"
 
   input {
-    // The ID of the user whose role is to be updated
     int user_id
-  
-    // The new role to assign to the user
     text new_role
   }
 
   stack {
-    precondition (false) {
-      error_type = "accessdenied"
-      error = "A alteração de perfis não está disponível nesta versão."
-    }
-
-    // Retrieve the authenticated user's details
     db.get user {
       field_name = "id"
       field_value = $auth.id
       output = ["id", "account_id", "role"]
     } as $admin_user
-  
-    // Verify the authenticated user has the 'admin' role
+
     function.run "Getting Started Template/role-based access control" {
       input = {user_id: $admin_user.id, required_role: "ADMIN"}
     } as $role_check
-  
-    // Retrieve the target user's details to be updated
+
+    precondition ($input.new_role == "FUNCIONARIO" || $input.new_role == "ADMIN") {
+      error_type = "inputerror"
+      error = "Perfil inválido. Use FUNCIONARIO ou ADMIN."
+    }
+
     db.get user {
       field_name = "id"
       field_value = $input.user_id
-      output = ["id", "created_at", "name", "email", "account_id", "role"]
+      output = ["id", "name", "account_id", "role", "active"]
     } as $target_user
-  
-    // Verify that the target user exists
+
     precondition ($target_user != null) {
       error_type = "notfound"
-      error = "Target user not found."
+      error = "Operador não encontrado."
     }
-  
-    // Ensure the admin user and target user belong to the same account
+
+    precondition ($target_user.id != $admin_user.id) {
+      error_type = "accessdenied"
+      error = "Não é possível alterar o perfil da própria conta."
+    }
+
+    precondition ($target_user.active != false) {
+      error_type = "accessdenied"
+      error = "Não é possível alterar o perfil de um operador desativado."
+    }
+
     precondition ($admin_user.account_id == $target_user.account_id) {
       error_type = "accessdenied"
-      error = "Admin can only update roles for users within their own account."
+      error = "O administrador só pode alterar operadores da própria conta."
     }
-  
-    // Update the target user's role
+
     db.edit user {
       field_name = "id"
       field_value = $input.user_id
       enforce_hidden_fields = false
       data = {role: $input.new_role}
     } as $updated_user
-  
-    // Log the role update event
+
     function.run "Getting Started Template/create_event_log" {
       input = {
-        user_id   : $admin_user.id
+        user_id: $admin_user.id
         account_id: $admin_user.account_id
-        action    : "updated_user_role"
-        metadata  : $updated_user|set:"previous_role":$target_user.role
+        action: "operator_role_update"
+        metadata: {
+          operator_id: $target_user.id
+          previous_role: $target_user.role
+          new_role: $input.new_role
+        }
       }
     } as $event_log
   }
 
-  response = $updated_user
-  tags = ["xano:quick-start"]
-  guid = "jvlktR0WjNVq3h10_UFzYuV8F8Q"
+  response = {
+    id: $updated_user.id
+    matricula: $updated_user.matricula
+    name: $updated_user.name
+    role: $updated_user.role
+  }
+  tags = ["biblioteca"]
+  guid = "operator-role-admin-2026"
 }
