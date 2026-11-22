@@ -56,11 +56,11 @@ O sistema SHALL impedir novo empréstimo e renovação quando o leitor possuir m
 - **THEN** o sistema não bloqueia a operação por motivo financeiro
 
 ### Requirement: Consulta de multas informa a situação do balcão
-O sistema SHALL permitir que Funcionário e Admin consultem multas por leitor, empréstimo e status, retornando somente dados necessários ao atendimento e sem expor credenciais.
+O sistema SHALL permitir que Funcionário e Admin consultem multas por leitor, empréstimo e status, retornando os dados necessários ao atendimento, incluindo valor, situação e auditoria de pagamento quando disponível, sem expor credenciais.
 
 #### Scenario: Consulta de multas do leitor
 - **WHEN** operador consulta multas por CPF de leitor
-- **THEN** o sistema retorna multas vinculadas ao leitor com empréstimo, valor, dias de atraso, data e status
+- **THEN** o sistema retorna multas vinculadas ao leitor com empréstimo, valor, dias de atraso, data, status, operador do pagamento e data/hora do pagamento quando informados
 
 #### Scenario: Consulta sem resultados
 - **WHEN** leitor não possui multas correspondentes ao filtro
@@ -69,6 +69,10 @@ O sistema SHALL permitir que Funcionário e Admin consultem multas por leitor, e
 #### Scenario: Consulta sem autenticação
 - **WHEN** requisição não apresenta credencial válida de operador
 - **THEN** o sistema rejeita o acesso sem retornar multas
+
+#### Scenario: Multa ainda não paga
+- **WHEN** operador consulta uma multa com status `Pendente`, `Abonada` ou `Zerada`
+- **THEN** o sistema retorna `paid_by` e `paid_at` nulos, sem inventar uma auditoria de pagamento
 
 ### Requirement: Interface apresenta multas e bloqueios com clareza
 A interface SHALL apresentar o valor e o motivo da multa no fluxo de devolução e na consulta de multas, usando mensagens textuais e estados acessíveis.
@@ -80,3 +84,51 @@ A interface SHALL apresentar o valor e o motivo da multa no fluxo de devolução
 #### Scenario: Operação bloqueada por multa
 - **WHEN** backend rejeita empréstimo ou renovação por multa pendente
 - **THEN** a interface informa o bloqueio e oferece acesso à consulta de multas sem indicar sucesso
+
+### Requirement: Pagamento de multa é restrito ao atendimento autorizado
+O sistema SHALL permitir que somente Funcionário ou Admin autenticado registre o pagamento de uma multa.
+
+#### Scenario: Funcionário paga multa pendente
+- **WHEN** Funcionário autenticado envia uma multa `Pendente` para pagamento
+- **THEN** o sistema autoriza a operação e altera o status para `Paga`
+
+#### Scenario: Leitor tenta pagar multa pelo endpoint do balcão
+- **WHEN** uma sessão de Leitor ou uma sessão inválida envia uma solicitação de pagamento
+- **THEN** o sistema rejeita a operação sem alterar a multa
+
+### Requirement: Pagamento altera somente multas pendentes
+O sistema SHALL aceitar o pagamento apenas quando a multa existir e estiver com status `Pendente`.
+
+#### Scenario: Multa inexistente
+- **WHEN** o operador informa um identificador que não corresponde a uma multa
+- **THEN** o sistema rejeita a operação e mantém os dados existentes
+
+#### Scenario: Multa já resolvida
+- **WHEN** o operador tenta pagar uma multa `Paga`, `Abonada` ou `Zerada`
+- **THEN** o sistema rejeita a operação informando que a multa não está pendente
+
+### Requirement: Pagamento preserva o valor e registra auditoria
+O sistema SHALL manter o valor original da multa e registrar o operador e a data/hora do pagamento.
+
+#### Scenario: Pagamento confirmado
+- **WHEN** o pagamento de uma multa pendente é concluído
+- **THEN** a multa permanece com o mesmo `amount_cents`, recebe status `Paga` e registra operador e data/hora da quitação
+
+#### Scenario: Pagamento concorrente
+- **WHEN** duas solicitações tentam pagar a mesma multa pendente simultaneamente
+- **THEN** somente uma transição é concluída e a outra é rejeitada sem criar novo registro de pagamento
+
+### Requirement: A consulta de multas oferece pagamento no balcão
+A interface SHALL apresentar a ação de pagamento somente para multas pendentes e comunicar o resultado da operação em texto acessível.
+
+#### Scenario: Ação para multa pendente
+- **WHEN** operador consulta uma multa com status `Pendente`
+- **THEN** a interface exibe uma ação de pagamento com confirmação antes do envio
+
+#### Scenario: Pagamento concluído na interface
+- **WHEN** o backend confirma o pagamento
+- **THEN** a interface informa sucesso, atualiza o status para `Paga` e remove a ação de pagamento daquela multa
+
+#### Scenario: Pagamento rejeitado na interface
+- **WHEN** o backend rejeita o pagamento
+- **THEN** a interface exibe a mensagem de erro, mantém a multa visível e não simula quitação

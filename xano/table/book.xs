@@ -23,6 +23,12 @@ table book {
     enum status {
       values = ["Disponível", "Emprestado"]
     }
+
+    timestamp? deleted_at
+    int? deleted_by {
+      table = "user"
+    }
+    text? deletion_reason filters=trim
   }
 
   index = [
@@ -31,6 +37,7 @@ table book {
     {type: "btree", field: [{name: "title", op: "asc"}]}
     {type: "btree", field: [{name: "genre_id", op: "asc"}]}
     {type: "btree", field: [{name: "status", op: "asc"}]}
+    {type: "btree", field: [{name: "deleted_at", op: "asc"}]}
     {type: "btree", field: [{name: "created_at", op: "desc"}]}
   ]
 

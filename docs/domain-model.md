@@ -14,7 +14,7 @@ Representa o membro da comunidade atendido pela biblioteca.
   - No cadastro, Funcionário/Admin define uma senha inicial genérica, igual para todos os leitores. A troca de senha é obrigatória no primeiro acesso ao Portal do Leitor. Essa é uma simplificação para o trabalho acadêmico; a senha deve ser armazenada com hash, nunca em texto puro.
   - Limite máximo de 2 livros emprestados simultaneamente.
   - Bloqueado para novos empréstimos se possuir livros atrasados ou multas pendentes.
-  - Acessa o Portal do Leitor via CPF e senha; pode consultar livros disponíveis e visualizar os próprios empréstimos ativos, vencimentos e histórico.
+  - Acessa o Portal do Leitor via CPF e senha; pode consultar livros disponíveis, visualizar os próprios empréstimos, vencimentos, multas e histórico, e solicitar renovação conforme as regras do empréstimo.
 
 ### Exemplar (Livro)
 Representa a cópia física de uma obra doada.
@@ -48,6 +48,18 @@ Registrada automaticamente quando ocorre devolução com atraso.
 - **Atributos:**
   - Valor: R$ 10,00 por dia corrido iniciado de atraso, começando no dia seguinte ao vencimento.
   - Status: `Pendente`, `Paga`, `Abonada` (pelo Admin) ou `Zerada` (por exclusão do livro).
+  - Pagamento: Funcionário ou Admin pode registrar o pagamento de uma multa
+    `Pendente`, que passa para `Paga` com `paid_by`, `paid_at` e o valor
+    original preservados. Multas `Paga`, `Abonada` ou `Zerada` não podem ser
+    pagas novamente.
+
+### Cadastro de funcionário
+Representa um operador interno autorizado a utilizar o Sistema Balcão.
+- **Atributos:** Matrícula, nome, CPF, endereço, telefone, senha com hash e
+  perfil (`FUNCIONARIO` ou `ADMIN`).
+- **Regras:** Somente Admin pode cadastrar, alterar perfil ou desativar outro
+  funcionário. A matrícula deve ser única e o perfil deve ser validado no
+  backend em todas as áreas administrativas.
 
 ---
 
@@ -59,3 +71,6 @@ Consultas agregadas no Xano para consumo exclusivo do perfil `ADMIN`. O dashboar
 - Quantidade de leitores com livros emprestados.
 - Quantidade de livros disponíveis e quantidade de livros emprestados.
 - Quantidade de empréstimos em atraso e quantidade de multas pendentes.
+
+O dashboard não deve expor dados pessoais desnecessários nem permitir que
+Funcionários ou Leitores consultem os indicadores administrativos.

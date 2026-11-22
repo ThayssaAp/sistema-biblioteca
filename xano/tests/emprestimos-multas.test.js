@@ -30,6 +30,24 @@ function overdueDaysBetween(dueAt, returnedAt) {
   return Math.ceil((returnedAt - dueAt) / 86400000);
 }
 
+function payFine(fine, role, paidBy, paidAt) {
+  if (!canOperateAtServiceDesk(role)) return { error: "UNAUTHORIZED" };
+  if (!fine || fine.status !== "Pendente") return { error: "NOT_PENDING" };
+  return {
+    ...fine,
+    status: "Paga",
+    paid_by: paidBy,
+    paid_at: paidAt
+  };
+}
+
+function fineAuditProjection(fine) {
+  return {
+    paid_by: fine.paid_by ?? null,
+    paid_at: fine.paid_at ?? null
+  };
+}
+
 test("permite operações de balcão somente para Funcionário e Admin", () => {
   assert.equal(canOperateAtServiceDesk("FUNCIONARIO"), true);
   assert.equal(canOperateAtServiceDesk("ADMIN"), true);
