@@ -108,7 +108,7 @@ O sistema SHALL registrar operador, data e hora e ação para criação, devolu�
 - **THEN** evento de auditoria identifica ação, empréstimo, exemplar e operador responsável
 
 ### Requirement: Interface do balcão executa o fluxo de empréstimos
-A interface SHALL oferecer telas acessíveis para criar, consultar, renovar e devolver empréstimos, com estados textuais de carregamento, sucesso, vazio e erro, exigindo sessão válida.
+A interface SHALL oferecer telas acessíveis para criar, consultar, renovar e devolver empréstimos, com estados textuais de carregamento, sucesso, vazio e erro, exigindo sessão válida. No formulário de criação, SHALL permitir selecionar leitores e exemplares disponíveis por rótulos legíveis e enviar seus identificadores numéricos nos campos `reader_id` e `book_id`.
 
 #### Scenario: Criação pela interface
 - **WHEN** operador preenche leitor e exemplar elegíveis e confirma
@@ -121,6 +121,18 @@ A interface SHALL oferecer telas acessíveis para criar, consultar, renovar e de
 #### Scenario: Sessão expirada
 - **WHEN** API rejeita a sessão durante o fluxo
 - **THEN** a interface limpa a sessão local e redireciona para o login
+
+#### Scenario: Opções de leitores e exemplares
+- **WHEN** operador abre ou atualiza a tela de empréstimos
+- **THEN** a interface carrega leitores e exemplares disponíveis e apresenta cada leitor como `<Nome> — CPF <cpf>` e cada exemplar como `<code || #id> — <title>`
+
+#### Scenario: Pesquisa de opções
+- **WHEN** operador pesquisa leitores ou exemplares no formulário
+- **THEN** a interface restringe as opções correspondentes sem alterar os filtros de consulta de empréstimos
+
+#### Scenario: Registro preserva o contrato do empréstimo
+- **WHEN** operador seleciona leitor e exemplar e registra o empréstimo
+- **THEN** a requisição `POST /emprestimo` mantém `reader_id` e `book_id` com os identificadores numéricos selecionados e as opções são atualizadas após o registro
 
 ### Requirement: Leitor autenticado consulta somente os próprios empréstimos
 O sistema SHALL permitir que uma sessão válida de leitor consulte seus empréstimos ativos e encerrados, sem aceitar identificador de outro leitor como critério de acesso.
@@ -149,8 +161,8 @@ A consulta SHALL indicar se cada empréstimo está ativo, devolvido ou atrasado 
 - **THEN** a resposta indica atraso e informa a multa vinculada quando ela existir
 
 #### Scenario: Histórico com multa resolvida
-- **WHEN** leitor consulta empréstimo devolvido que possui multa paga, abonada ou zerada
-- **THEN** a resposta mantém o histórico do empréstimo e apresenta a situação da multa sem oferecer pagamento ou abono
+- **WHEN** leitor consulta empréstimo devolvido que possui multa paga ou zerada
+- **THEN** a resposta mantém o histórico do empréstimo e apresenta a situação da multa sem oferecer pagamento
 
 ### Requirement: Portal apresenta meus empréstimos com estados acessíveis
 A interface SHALL oferecer uma tela autenticada de meus empréstimos com estados textuais de carregamento, vazio, sucesso, erro e sessão expirada.

@@ -31,8 +31,18 @@
         <section id="loans-view" class="task-view" aria-labelledby="loans-title">
           <h2 id="loans-title">Novo empréstimo</h2>
           <form id="loan-form" class="form-grid">
-            <label>Leitor <input name="reader_id" type="number" min="1" required></label>
-            <label>Exemplar <input name="book_id" type="number" min="1" required></label>
+            <label>Leitor
+              <input id="reader-search" type="search" placeholder="Pesquisar por nome ou CPF" autocomplete="off" aria-controls="reader-select">
+              <select id="reader-select" name="reader_id" required aria-label="Leitor do empréstimo">
+                <option value="">Carregando leitores...</option>
+              </select>
+            </label>
+            <label>Exemplar disponível
+              <input id="book-search" type="search" placeholder="Pesquisar por código ou título" autocomplete="off" aria-controls="book-select">
+              <select id="book-select" name="book_id" required aria-label="Exemplar do empréstimo">
+                <option value="">Carregando exemplares disponíveis...</option>
+              </select>
+            </label>
             <button class="primary-button" type="submit">Registrar empréstimo</button>
           </form>
 

@@ -47,8 +47,8 @@ O sistema SHALL impedir novo empréstimo e renovação quando o leitor possuir m
 - **WHEN** leitor com multa pendente solicita novo empréstimo
 - **THEN** o sistema rejeita a operação e informa que há pendência financeira
 
-#### Scenario: Renovação com multa em outro livro
-- **WHEN** leitor solicita renovação e possui multa pendente em outro empréstimo
+#### Scenario: Renovação no balcão com multa em outro livro
+- **WHEN** um operador solicita renovação no balcão e o leitor possui multa pendente em outro empréstimo
 - **THEN** o sistema rejeita a renovação
 
 #### Scenario: Pendência resolvida
