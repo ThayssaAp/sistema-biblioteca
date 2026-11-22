@@ -6,7 +6,13 @@ A interface é estática e consome a API publicada no Xano. Para iniciar a parti
 python3 -m http.server 8765 --directory frontend
 ```
 
-Abra `http://127.0.0.1:8765/`. A raiz encaminha para a tela de login; após entrar, o sistema valida a sessão e abre o menu principal. Funcionários e Admins podem acessar cadastro/consulta de livros e leitores, além do fluxo de empréstimos e consulta de multas no balcão. A gestão de gêneros e a retirada justificada de exemplares disponíveis aparecem apenas para Admin. O dashboard continua como **Em breve**.
+Abra `http://127.0.0.1:8765/`. A raiz encaminha para a tela de login; após entrar, o sistema valida a sessão e abre o menu principal. Funcionários e Admins podem acessar cadastro/consulta de livros e leitores, além do fluxo de empréstimos e consulta de multas no balcão. A gestão de gêneros, a retirada justificada de exemplares disponíveis e o gerenciamento de funcionários aparecem apenas para Admin. O Dashboard administrativo também é exclusivo do Admin e apresenta seis indicadores agregados: leitores cadastrados, leitores com empréstimos ativos, livros disponíveis e emprestados, empréstimos em atraso e multas pendentes.
+
+O endpoint agregado do Dashboard está publicado no workspace Xano live:
+
+```text
+GET https://x8ki-letl-twmt.n7.xano.io/api:36IocL78/admin/dashboard
+```
 
 O Portal do Leitor está disponível em `portal-leitor/`. O leitor entra com CPF e senha temporária fornecida pela biblioteca; no primeiro acesso, precisa definir uma senha própria. Tokens de leitores usam chaves próprias em `sessionStorage` e não são aceitos no fluxo de operadores, assim como tokens de operadores não são aceitos no portal.
 

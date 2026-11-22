@@ -9,6 +9,7 @@
   const GENRE_IN_USE_ERROR = "Não é possível remover um gênero que está associado a exemplares.";
   const GENRE_DUPLICATE_ERROR = "Já existe um gênero com esse nome.";
   const BOOK_UNAVAILABLE_ERROR = "Não é possível retirar um exemplar emprestado ou já retirado.";
+  const DELETION_REASON_ERROR = "A justificativa deve ter entre 1 e 500 caracteres.";
 
   function actionErrorMessage(error) {
     if (error?.message === "GENRE_IN_USE") {
@@ -19,6 +20,9 @@
     }
     if (error?.message === "BOOK_UNAVAILABLE") {
       return BOOK_UNAVAILABLE_ERROR;
+    }
+    if (error?.message === "DELETION_REASON_INVALID") {
+      return DELETION_REASON_ERROR;
     }
     return DEFAULT_ACTION_ERROR;
   }
@@ -50,7 +54,11 @@
   }
 
   function bookDeletionPayload(bookId, reason) {
-    return { book_id: Number(bookId), reason: String(reason || "").trim() };
+    const normalizedReason = String(reason || "").trim();
+    if (!normalizedReason || normalizedReason.length > 500) {
+      throw new Error("DELETION_REASON_INVALID");
+    }
+    return { book_id: Number(bookId), reason: normalizedReason };
   }
 
   function bookPayloadFromEntries(entries) {
@@ -112,8 +120,16 @@
           throw new Error("GENRE_DUPLICATE");
         }
         if (typeof result?.message === "string"
-          && result.message.includes("Não é possível retirar um exemplar emprestado.")) {
+          && (result.message.includes("Não é possível retirar um exemplar emprestado.")
+            || result.message.includes("Exemplar já foi retirado")
+            || result.message.includes("exemplar já foi retirado")
+            || result.message.includes("exemplar foi retirado"))) {
           throw new Error("BOOK_UNAVAILABLE");
+        }
+        if (typeof result?.message === "string"
+          && (result.message.includes("A justificativa é obrigatória.")
+            || result.message.includes("A justificativa deve ter no máximo 500 caracteres."))) {
+          throw new Error("DELETION_REASON_INVALID");
         }
         throw new Error(response.status === 401 || response.status === 403
           ? "UNAUTHORIZED"
