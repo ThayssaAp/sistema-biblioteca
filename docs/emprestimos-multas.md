@@ -1,30 +1,27 @@
 # Documentação técnica: empréstimos e multas
 
-## Visão geral
+## Escopo entregue
 
-As operações de empréstimo são destinadas ao atendimento de balcão. Os endpoints
-exigem autenticação e validam no backend o perfil `FUNCIONARIO` ou `ADMIN`.
-Valores de multa são armazenados em centavos e nenhum endpoint deste fluxo
-recebe ou retorna senhas, tokens ou credenciais.
+As operações de empréstimo e multa são parte do Sistema Balcão. Somente Funcionários e Admins autenticados podem criá-las, consultá-las, devolvê-las, renová-las ou registrar pagamentos. O Portal do Leitor pode apenas visualizar seus próprios empréstimos e multas.
 
-Base publicada:
+Base publicada: `https://x8ki-letl-twmt.n7.xano.io`
 
-`https://x8ki-letl-twmt.n7.xano.io`
+Os artefatos locais ficam em `xano/`. Timestamps são armazenados em milissegundos e valores de multa em centavos.
 
-Os artefatos locais do backend Xano ficam exclusivamente em `xano/`. Os
-timestamps de empréstimos são tratados em milissegundos e os valores de multa
-são persistidos em centavos.
+## Regras comuns
 
-Os grupos abaixo são identificados pelos caminhos canônicos atuais do Xano:
-
-- Empréstimos: `api:zM8VQEDN`
-- Multas: `api:05S-AQAd`
+- Vencimento: sete dias corridos após retirada ou renovação.
+- Renovação: uma única vez, somente no balcão, em empréstimo ativo e não atrasado.
+- Elegibilidade: até dois empréstimos ativos, sem atraso ou multa pendente e com faixa etária compatível.
+- Devolução: encerra o empréstimo, registra operador e libera o exemplar.
+- Multa: R$ 10,00 por dia corrido iniciado após o vencimento.
+- Pagamento: somente Funcionário ou Admin pode alterar uma multa `Pendente` para `Paga`.
 
 ## Endpoints de empréstimos
 
 ### `POST /api:zM8VQEDN/emprestimo`
 
-Cria um empréstimo para um leitor e um exemplar disponível.
+Cria um empréstimo com o leitor e o exemplar selecionados no balcão.
 
 Entrada:
 
@@ -39,41 +36,16 @@ Regras aplicadas:
 
 - leitor existente;
 - exemplar com status `Disponível`;
-- máximo de 2 empréstimos ativos;
+- máximo de dois empréstimos ativos;
 - ausência de atraso ou multa pendente;
-- faixa etária compatível;
+- faixa etária compatível; e
 - operador com perfil `FUNCIONARIO` ou `ADMIN`.
 
-O endpoint gera o código sequencial `#EMP000000`, calcula o vencimento para
-7 dias corridos depois, marca o empréstimo como `Ativo` e o exemplar como
-`Emprestado`.
-
-Resposta resumida:
-
-```json
-{
-  "id": 8,
-  "code": "#EMP000008",
-  "reader_id": 1,
-  "book_id": 2,
-  "borrowed_at": 1794260000000,
-  "due_at": 1794864800000,
-  "renewal_count": 0,
-  "status": "Ativo"
-}
-```
+A resposta inclui `code`, `reader_id`, `book_id`, `borrowed_at`, `due_at`, `renewal_count` e `status`.
 
 ### `GET /api:zM8VQEDN/emprestimos`
 
-Consulta empréstimos com filtros opcionais:
-
-- `loan_code`
-- `reader_id`
-- `book_id`
-- `status` (`Ativo` ou `Devolvido`)
-
-A resposta contém código, leitor, exemplar, datas, renovação e status. O atraso
-é interpretado pela interface para empréstimos ativos cujo `due_at` já passou.
+Consulta empréstimos por `loan_code`, `reader_id`, `book_id` e `status` (`Ativo` ou `Devolvido`). A resposta contém leitor, exemplar, datas, renovação, situação de atraso e responsáveis.
 
 ### `POST /api:zM8VQEDN/emprestimos/devolucao`
 
@@ -88,12 +60,11 @@ Entrada:
 }
 ```
 
-Uma devolução após o vencimento cria uma multa pendente. A operação é rejeitada
-se o empréstimo já estiver `Devolvido`.
+Uma devolução após o vencimento gera multa pendente calculada por dias corridos iniciados.
 
 ### `POST /api:zM8VQEDN/emprestimos/renovacao`
 
-Permite uma renovação por mais 7 dias corridos.
+Realiza uma renovação no balcão por mais sete dias corridos.
 
 Entrada:
 
@@ -104,43 +75,19 @@ Entrada:
 }
 ```
 
-A renovação é rejeitada quando o empréstimo está atrasado, já foi renovado ou
-o leitor possui multa pendente em outro empréstimo.
+A renovação é rejeitada quando o empréstimo está atrasado, já foi renovado ou o leitor possui multa pendente em outro empréstimo.
 
 ## Endpoints de multas
 
 ### `GET /api:05S-AQAd/multas`
 
-Consulta multas com filtros opcionais:
+Consulta multas por `reader_id`, `loan_id` e `status` (`Pendente`, `Paga`, `Abonada` ou `Zerada`).
 
-- `reader_id`
-- `loan_id`
-- `status` (`Pendente`, `Paga`, `Abonada` ou `Zerada`)
-
-Resposta resumida:
-
-```json
-[
-  {
-    "id": 3,
-    "loan_id": 8,
-    "reader_id": 1,
-    "overdue_days": 2,
-    "amount_cents": 2000,
-    "generated_at": 1794260000000,
-    "status": "Pendente",
-    "paid_by": null,
-    "paid_at": null,
-    "loan_code": "#EMP000008"
-  }
-]
-```
+A resposta inclui `loan_id`, `reader_id`, `overdue_days`, `amount_cents`, `generated_at`, `status`, `paid_by` e `paid_at`.
 
 ### `POST /api:05S-AQAd/multas/pagamento`
 
-Registra no balcão o pagamento de uma multa pendente. A operação exige sessão
-de Funcionário ou Admin e usa o valor persistido na multa, sem aceitar valor
-enviado pelo cliente.
+Registra no balcão o pagamento de uma multa pendente.
 
 Entrada:
 
@@ -150,56 +97,24 @@ Entrada:
 }
 ```
 
-O pagamento altera `status` de `Pendente` para `Paga`, preserva
-`amount_cents`, registra `paid_by` com o operador autenticado e `paid_at` com
-o timestamp da quitação. Multas `Paga`, `Abonada` ou `Zerada`, identificadores
-inexistentes e tentativas duplicadas são rejeitados.
+A operação exige sessão de Funcionário ou Admin, usa o valor persistido e nunca aceita valor enviado pelo cliente. O status passa de `Pendente` para `Paga`, preservando `amount_cents` e registrando `paid_by` e `paid_at`.
 
-## Tabelas
+## Persistência
 
 ### `loan`
 
-Campos operacionais principais:
-
-- `code`: identificador único `#EMP000000`;
-- `reader_id`, `book_id`, `operator_id`: relações do empréstimo;
-- `borrowed_at`, `due_at`, `returned_at`, `renewed_at`: datas;
-- `renewal_count` e `renewal_source`: controle da renovação única;
-- `status`: `Ativo` ou `Devolvido`;
-- `returned_by` e `return_notes`: rastreabilidade da devolução.
-
-Índices únicos e de consulta existem para código, leitor, exemplar, operador,
-status e vencimento.
+Campos principais: `code`, `reader_id`, `book_id`, `operator_id`, `borrowed_at`, `due_at`, `returned_at`, `renewed_at`, `renewal_count`, `renewal_source`, `status`, `returned_by` e `return_notes`.
 
 ### `fine`
 
-Campos operacionais principais:
+Campos principais: `loan_id`, `reader_id`, `overdue_days`, `amount_cents`, `generated_at`, `status`, `paid_by` e `paid_at`.
 
-- `loan_id` e `reader_id`: vínculos obrigatórios;
-- `overdue_days`: dias corridos iniciados de atraso;
-- `amount_cents`: R$ 10,00 por dia, ou `1000` centavos;
-- `generated_at`: data de geração;
-- `status`: `Pendente`, `Paga`, `Abonada` ou `Zerada`.
-- `paid_by` e `paid_at`: operador e data/hora do pagamento registrado no
-  balcão; permanecem nulos para multas que ainda não foram pagas.
-
-O índice único por `loan_id` impede a criação de uma segunda multa para a mesma
-devolução. O cálculo usa `1000` centavos por dia de atraso (`R$ 10,00`) e a
-diferença entre timestamps em milissegundos, arredondada para cima por dia
-corrido iniciado.
+O índice único por `loan_id` evita uma segunda multa para a mesma devolução. O cálculo usa 1000 centavos por dia iniciado e aplica `ceil` à diferença em milissegundos entre devolução e vencimento.
 
 ## Validação
 
-Os testes de contrato e fixtures estão em
-`xano/tests/emprestimos-multas.test.js` e podem ser executados com:
+Testes locais:
 
 ```bash
 node --test xano/tests/emprestimos-multas.test.js
 ```
-
-O fluxo manual validado no ambiente publicado cobriu criação, consulta,
-renovação única, devolução, liberação do exemplar, geração de multa pendente e
-registro de pagamento no balcão. A consulta de multas retorna `paid_by` e
-`paid_at`, nulos quando não houve pagamento e preenchidos quando a quitação foi
-registrada. Alterações futuras devem passar por dry-run antes de qualquer push
-no workspace Xano.

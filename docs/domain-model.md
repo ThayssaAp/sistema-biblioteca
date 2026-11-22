@@ -1,76 +1,69 @@
 # Modelo de Domínio — Biblioteca Comunitária
 
-## 1. Visão Geral das Entidades
+## 1. Operador
+Representa Funcionário ou Admin autenticado no Sistema Balcão.
 
-### Operador (Funcionário / Admin)
-Representa os usuários internos que autenticam e operam o sistema no atendimento de balcão e, no caso do Admin, no dashboard exclusivo.
-- **Atributos:** Matrícula funcional (ID de acesso), Nome, CPF, Endereço, Telefone, Senha (criptografada) e Perfil (`FUNCIONARIO` ou `ADMIN`).
+- Matrícula funcional única, nome, CPF, endereço, telefone, senha com hash e perfil `FUNCIONARIO` ou `ADMIN`.
+- Funcionários consultam o acervo e cadastram livros e leitores, criam, consultam, renovam e devolvem empréstimos e consultam ou recebem pagamentos de multas.
+- Admin possui todas as operações do Funcionário e pode gerenciar gêneros, retirar logicamente livros, administrar funcionários e consultar o dashboard.
+- O backend valida o perfil em todas as operações administrativas.
 
-### Leitor
-Representa o membro da comunidade atendido pela biblioteca.
-- **Atributos:** CPF (Identificador Único), Nome, Data de Nascimento (obrigatória para validação de faixa etária), Endereço, Telefone, E-mail (opcional), Senha (criptografada para acesso ao Portal).
-- **Regras:**
-  - A conta do Leitor é separada das contas de Funcionário/Admin.
-  - No cadastro, Funcionário/Admin define uma senha inicial genérica, igual para todos os leitores. A troca de senha é obrigatória no primeiro acesso ao Portal do Leitor. Essa é uma simplificação para o trabalho acadêmico; a senha deve ser armazenada com hash, nunca em texto puro.
-  - Limite máximo de 2 livros emprestados simultaneamente.
-  - Bloqueado para novos empréstimos se possuir livros atrasados ou multas pendentes.
-  - Acessa o Portal do Leitor via CPF e senha; pode consultar livros disponíveis, visualizar os próprios empréstimos, vencimentos, multas e histórico, e solicitar renovação conforme as regras do empréstimo.
+## 2. Leitor
+Representa o membro com acesso próprio ao Portal do Leitor.
 
-### Exemplar (Livro)
-Representa a cópia física de uma obra doada.
-- **Atributos:**
-  - ID do Livro: formato `#ADS0000` (gerado automaticamente, fixo, 4 dígitos, nunca reusado).
-  - Nome (Obrigatório).
-  - ISBN (10 a 13 caracteres, sem hífens, permissão de letras, validação de tamanho).
-  - Ano da Obra Original (Opcional, 4 dígitos <= ano atual).
-  - Gênero (Obrigatório, seleção em lista cadastrada).
-  - Faixa Etária (Obrigatória: `Livre`, `10+`, `12+`, `14+`, `16+`, `18+`, `Não informada` -> tratada como `18+`).
-  - Status: `Disponível` ou `Emprestado`.
+- CPF único com 11 dígitos, nome, data de nascimento, endereço, telefone, e-mail opcional e senha com hash.
+- O cadastro no balcão define uma senha temporária. No primeiro acesso, o leitor deve autenticá-la e substituí-la por uma senha própria.
+- O login é realizado por CPF e senha; a sessão do leitor é separada da sessão dos operadores.
+- O limite operacional é de até dois empréstimos ativos.
+- Um novo empréstimo é bloqueado por empréstimo atrasado ou multa pendente.
+- O portal permite consultar o acervo disponível e os próprios empréstimos, vencimentos, devoluções e multas.
 
-### Empréstimo
-Representa o vínculo temporário entre um Exemplar e um Leitor.
-- **Atributos:**
-  - Código do Empréstimo: formato `#EMP000000` (gerado automaticamente, 6 dígitos, sequencial).
-  - Data e Hora do Empréstimo (Automáticas no fuso de Brasília).
-  - Vencimento: 7 dias corridos após a data do empréstimo ou da renovação. por exemplo, um livro retirado na quarta deve ser devolvido até 23h59 da quarta-feira seguinte, a multa começa na quinta-feira.
-  - Quantidade de Renovações: Número inteiro (padrão 0, máximo 1).
-  - Status: `Ativo`, `Devolvido`.
-  - Operador Responsável (Operador que abriu o empréstimo no balcão).
-- **Regras de Renovação:**
-  - Máximo de 1 renovação permitida por empréstimo.
-  - Pode ser solicitada pelo Portal do Leitor ou pelo sistema do Funcionário.
-  - Elegível apenas se o status for `Ativo` e dentro do prazo limite (sem atraso).
-  - O leitor não pode renovar um empréstimo se tiver multa em outro livro.
-  - Adiciona mais 7 dias corridos ao prazo a partir da renovação.
+## 3. Exemplar
+Representa uma cópia física de uma obra.
 
-### Multa
-Registrada automaticamente quando ocorre devolução com atraso.
-- **Atributos:**
-  - Valor: R$ 10,00 por dia corrido iniciado de atraso, começando no dia seguinte ao vencimento.
-  - Status: `Pendente`, `Paga`, `Abonada` (pelo Admin) ou `Zerada` (por exclusão do livro).
-  - Pagamento: Funcionário ou Admin pode registrar o pagamento de uma multa
-    `Pendente`, que passa para `Paga` com `paid_by`, `paid_at` e o valor
-    original preservados. Multas `Paga`, `Abonada` ou `Zerada` não podem ser
-    pagas novamente.
+- Código `#ADS0000`, gerado automaticamente e não reutilizado.
+- Título obrigatório, ISBN opcional válido, ano opcional, gênero obrigatório, faixa etária obrigatória e status `Disponível`, `Emprestado` ou estado de retirada lógica.
+- O status comum é `Disponível` ou `Emprestado`.
+- Faixas aceitas: `Livre`, `10+`, `12+`, `14+`, `16+`, `18+` e `Não informada`; `Não informada` é tratada como `18+`.
+- Apenas Admin pode retirar logicamente um exemplar disponível com justificativa, preservando o registro e a auditoria.
+- Exemplares retirados deixam de aparecer nas consultas comuns e não podem ser emprestados.
 
-### Cadastro de funcionário
-Representa um operador interno autorizado a utilizar o Sistema Balcão.
-- **Atributos:** Matrícula, nome, CPF, endereço, telefone, senha com hash e
-  perfil (`FUNCIONARIO` ou `ADMIN`).
-- **Regras:** Somente Admin pode cadastrar, alterar perfil ou desativar outro
-  funcionário. A matrícula deve ser única e o perfil deve ser validado no
-  backend em todas as áreas administrativas.
+## 4. Empréstimo
+Representa a relação entre leitor, exemplar e operador.
 
----
+- Código `#EMP000000`, único e sequencial.
+- Datas de retirada, vencimento, devolução e renovação em timestamps.
+- Status `Ativo` ou `Devolvido`.
+- Operador responsável pela abertura, devolução ou renovação.
+- Vencimento em sete dias corridos após a retirada ou renovação.
+- Pode haver apenas uma renovação por empréstimo, realizada no balcão em empréstimo ativo e dentro do prazo.
+- Renovação é bloqueada por multa pendente em outro empréstimo.
+- Devolução encerra o empréstimo, registra operador e libera o exemplar.
 
-## 2. Dashboard do Admin
+## 5. Multa
+Representa o valor decorrente da devolução atrasada de um empréstimo.
 
-Consultas agregadas no Xano para consumo exclusivo do perfil `ADMIN`. O dashboard deve ser simples e apresentar:
+- R$ 10,00 por dia corrido iniciado de atraso, persistido em centavos (`1000` por dia).
+- O próprio dia do vencimento não gera atraso e o prazo é considerado pelos timestamps em milissegundos.
+- Status `Pendente`, `Paga`, `Abonada` ou `Zerada`.
+- A devolução atrasada gera ou atualiza uma única multa vinculada ao empréstimo e ao leitor.
+- Funcionário ou Admin pode registrar pagamento de multa `Pendente`, preservando o valor e registrando operador e data/hora.
+- Multas `Paga`, `Abonada` ou `Zerada` não podem ser pagas novamente.
+- Quando um Admin retira logicamente um exemplar com multas pendentes de empréstimos anteriores, o backend altera essas multas para `Zerada` sem alterar multas já pagas ou abonadas.
+
+## 6. Gênero
+Representa a classificação utilizada pelos exemplares.
+
+- Nome obrigatório, aparado, com máximo de 80 caracteres e único sem distinção de caixa.
+- Operadores autenticados podem consultar gêneros.
+- Somente Admin pode criar, editar e excluir gêneros.
+- Um gênero associado a exemplares não pode ser excluído.
+
+## 7. Dashboard Administrativo
+Disponível somente ao perfil `ADMIN`.
 
 - Total de leitores cadastrados.
-- Quantidade de leitores com livros emprestados.
-- Quantidade de livros disponíveis e quantidade de livros emprestados.
-- Quantidade de empréstimos em atraso e quantidade de multas pendentes.
-
-O dashboard não deve expor dados pessoais desnecessários nem permitir que
-Funcionários ou Leitores consultem os indicadores administrativos.
+- Quantidade de leitores com empréstimos ativos.
+- Quantidade de livros disponíveis e emprestados.
+- Quantidade de empréstimos em atraso.
+- Quantidade de multas pendentes.

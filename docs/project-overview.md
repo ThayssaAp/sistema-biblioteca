@@ -1,62 +1,50 @@
 # Visão Geral do Projeto — Sistema de Biblioteca Comunitária
 
 ## 1. Visão Geral
-Sistema de gestão para biblioteca comunitária abastecida por doações. O sistema combina atendimento de balcão operado pela equipe, um Portal do Leitor e um dashboard de acesso exclusivo do Admin.
+O projeto é um sistema web completo para gestão de uma biblioteca comunitária. Ele reúne o Sistema Balcão, usado por Funcionários e Admins, o Portal do Leitor e a Área Administrativa. Todo o escopo abaixo corresponde a funcionalidades entregues no frontend e nas APIs Xano.
 
-## 2. Problema
-A biblioteca comunitária necessita controlar empréstimos e acervo no balcão sem complexidade operacional, além de dar transparência e autonomia aos leitores sobre seus prazos e permitir que a administração acompanhe indicadores de uso da biblioteca.
+## 2. Público e perfis
+- **Funcionário:** autentica no Sistema Balcão e pode consultar o acervo, cadastrar livros e leitores, consultar leitores, criar, consultar, renovar e encerrar empréstimos no balcão e consultar ou registrar o pagamento de multas.
+- **Admin:** possui integralmente o acesso do Funcionário e, além disso, gerencia gêneros, exclui logicamente livros, cadastra, consulta, altera o perfil e desativa funcionários e visualiza o dashboard administrativo.
+- **Leitor:** autentica no Portal do Leitor por CPF e senha própria. Pode consultar livros disponíveis, consultar os próprios empréstimos, vencimentos, situação de atraso e multas.
 
-## 3. Objetivos
-- Prover uma interface rápida de balcão para operadores, garantindo rastreabilidade, empréstimos por 7 dias corridos e controle de atrasos e multas.
-- Disponibilizar um portal para leitores cadastrados consultarem livros disponíveis e visualizarem seus empréstimos ativos, vencimentos e histórico, além de solicitarem renovações.
-- Oferecer um dashboard simples e exclusivo do Admin com indicadores de leitores, acervo e atrasos/multas.
+## 3. Sistema Balcão
+- Consulta e cadastro de livros com código `#ADS0000` e seleção de gênero e faixa etária.
+- Consulta e cadastro de leitores identificados por CPF.
+- Criação de empréstimo no balcão com seleção de um leitor elegível e de um exemplar disponível, gerando o código `#EMP000000`.
+- Consulta de empréstimos por código, leitor, exemplar e status.
+- Devolução e renovação no balcão. Cada empréstimo pode ser renovado uma vez por mais sete dias corridos.
+- Consulta de multas e registro de pagamento por Funcionário ou Admin.
 
-## 4. Público-alvo / Usuários
-- **Funcionário:** Opera o balcão (cadastra livros e leitores, consulta acervo, realiza empréstimos, devoluções e solicitações de renovação).
-- **Admin:** Possui todas as permissões do Funcionário + exclusão de livros (com justificativa), abono de multas, gerenciamento de gêneros e acesso exclusivo ao dashboard.
-- **Leitor:** Possui uma conta separada das contas de Funcionário/Admin e acessa o Portal do Leitor para consultar livros disponíveis, visualizar os próprios empréstimos ativos, vencimentos e histórico, e solicitar renovações.
+## 4. Portal do Leitor
+- Login por CPF e senha separados da autenticação dos operadores.
+- Troca obrigatória da senha temporária no primeiro acesso.
+- Permite consulta somente leitura de livros disponíveis e dos próprios empréstimos, vencimentos e multas.
 
-## 5. Escopo Expandido
-- **Sistema Balcão:** Autenticação de operadores (matrícula/senha), consulta de acervo, cadastro de livros (`#ADS0000`), cadastro de leitores (CPF), criação de empréstimos (`#EMP000000`) e pagamento de multas. O atendimento também mantém devoluções, consulta de empréstimos e cálculo de multas por dias corridos iniciados de atraso.
-- **Contas:** As contas de leitores são separadas das contas de Funcionário/Admin. No cadastro do leitor, Funcionário/Admin define uma senha inicial genérica, igual para todos os leitores; a troca é obrigatória no primeiro acesso ao Portal do Leitor. Essa simplificação atende ao trabalho acadêmico, mas as senhas devem ser armazenadas com hash, nunca em texto puro.
-- **Portal do Leitor:** Acesso restrito a leitores cadastrados, com autenticação por CPF e senha, consulta de livros disponíveis, visualização dos próprios empréstimos, data de expiração, multas e histórico, além da solicitação de renovação (1 uso por empréstimo).
-- **Área do Admin:** Reúne todas as opções do Funcionário e acrescenta adição, alteração e exclusão de gêneros, exclusão administrativa de livros, cadastro de funcionários e dashboard.
-- **Dashboard do Admin:** Exibe somente o total de leitores cadastrados, a quantidade de leitores com livros emprestados, as quantidades de livros disponíveis e emprestados, e a quantidade de empréstimos em atraso e de multas. Não inclui rankings de popularidade nem painel de atrasos críticos.
-- **Empréstimos e multas:** O empréstimo vence após 7 dias corridos (por exemplo, uma retirada na quarta-feira vence na quarta-feira seguinte). É permitida uma renovação por empréstimo, por mais 7 dias corridos, solicitada pelo Portal do Leitor ou pelo sistema do Funcionário. O leitor não pode renovar um empréstimo se tiver multa em outro livro. A multa é de R$ 10,00 por dia corrido iniciado de atraso, começando no dia seguinte ao vencimento.
-- **Gerenciamento Admin:** Exclusão restrita de exemplares, abono de multas e edição de gêneros.
+## 5. Área Administrativa
+A Área Administrativa é exclusiva do perfil `ADMIN`:
+- adição, edição e exclusão de gêneros que não estejam associados a exemplares;
+- exclusão lógica de livros disponíveis, com justificativa e auditoria;
+- cadastro, consulta, alteração de perfil e desativação lógica de funcionários; e
+- dashboard com total de leitores, leitores com empréstimos ativos, livros disponíveis, livros emprestados, empréstimos em atraso e multas pendentes.
 
-## 5.1 Status e próxima sequência de entrega
+## 6. Regras de empréstimos e multas
+- O empréstimo vence sete dias corridos após a retirada ou a última renovação.
+- Novos empréstimos exigem exemplar disponível e impedem limite acima de dois empréstimos ativos, atraso, multa pendente ou incompatibilidade de faixa etária.
+- A renovação é única, só pode ocorrer no balcão, para empréstimo ativo e dentro do prazo, e é bloqueada por multa pendente em outro empréstimo.
+- Devoluções encerram o empréstimo e liberam o exemplar.
+- Multas são calculadas em R$ 10,00 por dia corrido iniciado de atraso, sem contar o próprio dia do vencimento. O valor é registrado em centavos e pagável no balcão por Funcionário ou Admin.
 
-O desenvolvimento segue entregas verticais por Change. A situação após a
-sincronização da `feature/05-gerenciar-adm` na `feature/03-emprestimos-multas`
-é:
+## 7. Segurança e UX
+- Perfis e operações administrativas são validados no backend.
+- Senhas de operadores e leitores são armazenadas com hash e não são retornadas pelas APIs.
+- A interface usa HTML5, CSS3 e JavaScript puro, com estados textuais de carregamento, sucesso, vazio e erro.
+- São usadas as fontes `Inter` e `JetBrains Mono` e rótulos textuais associados aos controles, preservando acessibilidade e operação por teclado.
 
-- **Disponível:** consulta e cadastro de livros, cadastro e consulta de
-  leitores, criação/consulta/devolução/renovação de empréstimos no balcão,
-  consulta e pagamento de multas, autenticação do Portal do Leitor, consulta de
-  livros no Portal e exclusão administrativa de exemplares.
-- **Pagamento de multas:** já entregue, com registro do operador, data/hora,
-  valor preservado e status `Paga`.
-- **Entregas Admin disponíveis:** cadastro e desativação de funcionários,
-  exclusão administrativa de livros e Dashboard com os indicadores definidos
-  neste documento.
-Cada item pendente deve ser implementado em uma Change própria, com contrato
-de backend, interface e testes antes de ser marcado como concluído.
+## 8. Arquitetura
+- Backend e banco de dados: Xano, com APIs REST e consultas agregadas.
+- Frontend: páginas HTML e JavaScript integrado em `frontend/`.
+- Timestamps operacionais são persistidos em milissegundos e valores financeiros em centavos.
 
-## 6. Fora do Escopo
-- Localização física das estantes/prateleiras nos livros.
-- Tratamento de livros danificados/perdidos no status formal do acervo.
-- Fila física/reserva automatizada de exemplares ocupados.
-- Notificações automáticas externas (SMS, e-mail real ou WhatsApp).
-- Calendário dinâmico de feriados nacionais/municipais.
-- Integração com APIs externas de ISBN ou pré-preenchimento bibliográfico.
-
-## 7. Requisitos de UX e Interfaces
-- **Paleta:** Fundo em tom de papel claro (`#F6F3EC`), superfícies brancas, verde-escuro (`#1F5C4D`) como tom principal, acompanhado de indicação textual para acessibilidade.
-- **Tipografia:** Fonte `Inter` para texto geral e `JetBrains Mono` para códigos (`#ADS0000`, `#EMP000000`).
-- **Estratégia:** Uma tarefa principal por tela; foco inicial via teclado para operação de balcão; layout responsivo para o Portal do Leitor e o dashboard administrativo.
-
-## 8. Arquitetura Tecnológica
-- **Backend / Banco de Dados:** Xano (APIs REST, endpoints de agregação/analytics e tabelas de banco).
-- **Frontend / Interface Gráfica:** HTML5, CSS3 e JavaScript puro (Vanilla JS).
-- **Abordagem de Desenvolvimento:** Entregas verticais completas por Change atômica (Backend + Frontend + Tests).
+## 9. Fora do escopo entregue
+Não fazem parte do sistema: localização física de estantes, reserva ou fila de exemplares, notificações externas, integração com APIs externas de ISBN e calendário automático de feriados.

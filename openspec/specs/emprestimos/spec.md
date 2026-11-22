@@ -161,8 +161,8 @@ A consulta SHALL indicar se cada empréstimo está ativo, devolvido ou atrasado 
 - **THEN** a resposta indica atraso e informa a multa vinculada quando ela existir
 
 #### Scenario: Histórico com multa resolvida
-- **WHEN** leitor consulta empréstimo devolvido que possui multa paga, abonada ou zerada
-- **THEN** a resposta mantém o histórico do empréstimo e apresenta a situação da multa sem oferecer pagamento ou abono
+- **WHEN** leitor consulta empréstimo devolvido que possui multa paga ou zerada
+- **THEN** a resposta mantém o histórico do empréstimo e apresenta a situação da multa sem oferecer pagamento
 
 ### Requirement: Portal apresenta meus empréstimos com estados acessíveis
 A interface SHALL oferecer uma tela autenticada de meus empréstimos com estados textuais de carregamento, vazio, sucesso, erro e sessão expirada.
