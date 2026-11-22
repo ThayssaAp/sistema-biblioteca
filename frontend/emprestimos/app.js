@@ -40,7 +40,8 @@
       listLoans: (token, params) => send(operationsBaseUrl, `/emprestimos${params ? `?${new URLSearchParams(params)}` : ""}`, token),
       returnLoan: (token, data) => send(operationsBaseUrl, "/emprestimos/devolucao", token, { method: "POST", body: JSON.stringify(data) }),
       renewLoan: (token, data) => send(operationsBaseUrl, "/emprestimos/renovacao", token, { method: "POST", body: JSON.stringify(data) }),
-      listFines: (token, params) => send(finesBaseUrl, `/multas${params ? `?${new URLSearchParams(params)}` : ""}`, token)
+      listFines: (token, params) => send(finesBaseUrl, `/multas${params ? `?${new URLSearchParams(params)}` : ""}`, token),
+      payFine: (token, data) => send(finesBaseUrl, "/multas/pagamento", token, { method: "POST", body: JSON.stringify(data) })
     });
   }
 
@@ -87,11 +88,24 @@
   }
   function renderFines(items) {
     if (!Array.isArray(items) || items.length === 0) { finesList.innerHTML = '<p class="empty">Nenhuma multa encontrada.</p>'; return; }
-    finesList.innerHTML = `<table><thead><tr><th>Empréstimo</th><th>Leitor</th><th>Atraso</th><th>Valor</th><th>Status</th></tr></thead><tbody>${items.map((fine) => `<tr><td>${escapeHtml(fine.loan_code || fine.loan_id)}</td><td>${escapeHtml(fine.reader_name || fine.reader_id)}</td><td>${escapeHtml(fine.overdue_days)} dia(s)</td><td>${money(fine.amount_cents)}</td><td>${escapeHtml(fine.status)}</td></tr>`).join("")}</tbody></table>`;
+    finesList.innerHTML = `<table><thead><tr><th>Empréstimo</th><th>Leitor</th><th>Atraso</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead><tbody>${items.map((fine) => `<tr><td>${escapeHtml(fine.loan_code || fine.loan_id)}</td><td>${escapeHtml(fine.reader_name || fine.reader_id)}</td><td>${escapeHtml(fine.overdue_days)} dia(s)</td><td>${money(fine.amount_cents)}</td><td>${escapeHtml(fine.status)}</td><td>${fine.status === "Pendente" ? `<button class="secondary-button" type="button" data-pay-fine="${escapeHtml(fine.id)}">Registrar pagamento</button>` : ""}</td></tr>`).join("")}</tbody></table>`;
+    finesList.querySelectorAll("[data-pay-fine]").forEach((button) => button.addEventListener("click", () => payFine(button.dataset.payFine, button)));
   }
   async function loadLoans() { try { renderLoans(await client.listLoans(token, query(root.document.getElementById("loan-search")))); } catch (error) { handleError(error); } }
   async function loadFines() { try { renderFines(await client.listFines(token, query(root.document.getElementById("fine-search")))); } catch (error) { handleError(error); } }
   async function operate(action, data) { try { await client[action](token, data); setStatus("Operação concluída.", "success"); await loadLoans(); } catch (error) { handleError(error); } }
+  async function payFine(fineId, button) {
+    if (!root.confirm("Confirmar o pagamento desta multa no balcão?")) return;
+    button.disabled = true;
+    try {
+      await client.payFine(token, { fine_id: Number(fineId) });
+      setStatus("Pagamento da multa registrado no balcão.", "success");
+      await loadFines();
+    } catch (error) {
+      button.disabled = false;
+      handleError(error);
+    }
+  }
 
   if (!token) { root.location.replace(LOGIN_URL); return; }
   try { client = createLoansClient(root.BIBLIOTECA_CONFIG); } catch { setStatus("A tela ainda não está configurada para conectar ao sistema."); return; }

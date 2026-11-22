@@ -2,6 +2,8 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
 
 const rolesAllowedAtServiceDesk = ["FUNCIONARIO", "ADMIN"];
 const loanStatuses = ["Ativo", "Devolvido"];
@@ -26,6 +28,24 @@ function fineAmountCents(overdueDays) {
 function overdueDaysBetween(dueAt, returnedAt) {
   if (returnedAt <= dueAt) return 0;
   return Math.ceil((returnedAt - dueAt) / 86400000);
+}
+
+function payFine(fine, role, paidBy, paidAt) {
+  if (!canOperateAtServiceDesk(role)) return { error: "UNAUTHORIZED" };
+  if (!fine || fine.status !== "Pendente") return { error: "NOT_PENDING" };
+  return {
+    ...fine,
+    status: "Paga",
+    paid_by: paidBy,
+    paid_at: paidAt
+  };
+}
+
+function fineAuditProjection(fine) {
+  return {
+    paid_by: fine.paid_by ?? null,
+    paid_at: fine.paid_at ?? null
+  };
 }
 
 test("permite operações de balcão somente para Funcionário e Admin", () => {
@@ -97,4 +117,18 @@ test("calcula atraso com timestamps em milissegundos", () => {
   assert.equal(overdueDaysBetween(dueAt, dueAt + 86400000), 1);
   assert.equal(overdueDaysBetween(dueAt, dueAt + (3 * 86400000)), 3);
   assert.equal(overdueDaysBetween(dueAt, dueAt + 3600000), 1);
+});
+
+test("consulta do portal isola o leitor e preserva multa opcional", () => {
+  const endpoint = readFileSync(path.join(__dirname, "../api/leitores/emprestimos_GET.xs"), "utf8");
+
+  assert.match(endpoint, /api_group = "Leitores"/);
+  assert.match(endpoint, /auth = "reader"/);
+  assert.match(endpoint, /where = \$db\.loan\.reader_id == \$auth\.id/);
+  assert.match(endpoint, /type: "left"/);
+  assert.match(endpoint, /"fine_amount_cents"/);
+  assert.match(endpoint, /"fine_status"/);
+  assert.match(endpoint, /"due_at"/);
+  assert.doesNotMatch(endpoint, /overdue:/);
+  assert.doesNotMatch(endpoint, /reader_id\?/);
 });

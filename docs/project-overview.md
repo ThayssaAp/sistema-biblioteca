@@ -33,12 +33,10 @@ sincronização da `feature/05-gerenciar-adm` na `feature/03-emprestimos-multas`
 
 - **Disponível:** consulta e cadastro de livros, cadastro e consulta de
   leitores, criação/consulta/devolução/renovação de empréstimos no balcão,
-  consulta de multas, autenticação do Portal do Leitor, consulta de livros no
-  Portal e exclusão administrativa de exemplares.
-- **Próxima entrega do Portal:** tela de meus empréstimos com vencimento,
-  atraso e multa, seguida da solicitação de renovação pelo leitor.
-- **Próxima entrega do balcão:** operação de pagamento de multa, com registro
-  do operador, data e valor quitado.
+  consulta e pagamento de multas, autenticação do Portal do Leitor, consulta de
+  livros no Portal e exclusão administrativa de exemplares.
+- **Pagamento de multas:** já entregue, com registro do operador, data/hora,
+  valor preservado e status `Paga`.
 - **Entregas Admin disponíveis:** cadastro e desativação de funcionários,
   exclusão administrativa de livros e Dashboard com os indicadores definidos
   neste documento.

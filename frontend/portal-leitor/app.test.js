@@ -102,6 +102,27 @@ test("consulta livros e gêneros usa somente o token do leitor e serializa filtr
   assert.equal(requests[0].options.headers.Authorization, "Bearer token-leitor");
 });
 
+test("consulta empréstimos usa somente a sessão do leitor e não envia filtros de escopo", async () => {
+  const values = new Map([[storageKeys.token, "token-leitor"]]);
+  const storage = {
+    getItem: (key) => values.get(key) || null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key)
+  };
+  let request;
+  const client = createClient({ apiBaseUrl: "https://api.test" }, async (url, options) => {
+    request = { url, options };
+    return response(200, [{ id: 4, status: "Ativo", overdue: false, fine_id: null }]);
+  }, storage, () => {});
+
+  const loans = await client.listLoans();
+
+  assert.equal(request.url, "https://api.test/emprestimos");
+  assert.equal(request.options.method, undefined);
+  assert.equal(request.options.headers.Authorization, "Bearer token-leitor");
+  assert.equal(loans[0].fine_id, null);
+});
+
 test("consulta limpa sessão e redireciona quando o token expira", async () => {
   const values = new Map([[storageKeys.token, "token-expirado"]]);
   const storage = {
@@ -131,6 +152,12 @@ test("telas do portal possuem login, troca obrigatória e acessibilidade básica
   assert.match(catalog, /id="catalog-form"/);
   assert.match(catalog, /id="genre_id"/);
   assert.match(catalog, /id="books-list"/);
+  const loans = readFileSync(path.join(directory, "meus-emprestimos.html"), "utf8");
+  assert.match(home, /href="\.\/meus-emprestimos\.html"/);
+  assert.match(loans, /id="loans-status"[^>]*role="status"/);
+  assert.match(loans, /id="loans-list"/);
+  assert.match(loans, /id="loans-retry"[^>]*hidden/);
+  assert.doesNotMatch(loans, /renovar|pagar/i);
 });
 
 test("login do leitor não é tratado como página inicial", () => {
