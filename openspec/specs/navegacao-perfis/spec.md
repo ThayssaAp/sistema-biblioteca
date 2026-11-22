@@ -41,7 +41,7 @@ A interface SHALL agrupar no menu principal as tarefas disponíveis para Funcion
 - **THEN** a interface abre os fluxos funcionais de balcão para criar, consultar, renovar, devolver empréstimos e visualizar multas
 
 ### Requirement: Área administrativa é exclusiva de Admin
-A interface SHALL exibir a área administrativa somente para `ADMIN`, preservando a gestão funcional de gêneros e fornecendo uma opção funcional de gerenciamento de funcionários, enquanto outros recursos administrativos podem continuar identificados como “Em breve”.
+A interface SHALL exibir a área administrativa somente para `ADMIN`, preservando a gestão funcional de gêneros, gerenciamento de funcionários e exclusão de livros por fluxos funcionais e protegidos.
 
 #### Scenario: Admin acessa gêneros
 - **WHEN** um Admin seleciona a gestão de gêneros
@@ -50,6 +50,10 @@ A interface SHALL exibir a área administrativa somente para `ADMIN`, preservand
 #### Scenario: Admin acessa funcionários
 - **WHEN** um Admin seleciona gerenciamento de funcionários
 - **THEN** a interface abre o fluxo funcional de cadastro, consulta, perfil e desativação
+
+#### Scenario: Admin acessa exclusão de livro
+- **WHEN** um Admin seleciona exclusão de livro
+- **THEN** a interface abre o fluxo de retirada lógica de exemplares
 
 #### Scenario: Admin acessa recurso futuro
 - **WHEN** um Admin seleciona outro recurso administrativo ainda não implementado
