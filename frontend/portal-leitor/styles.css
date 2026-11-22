@@ -28,4 +28,9 @@ input:focus-visible, select:focus-visible { border-color: #1f5c4d; box-shadow: 0
 .book-card h2 { margin: 0; color: #193d34; font-size: 19px; }
 .book-card p { margin: 8px 0; color: #5c6862; line-height: 1.45; }
 .book-card code { color: #1f5c4d; font-family: "JetBrains Mono", monospace; font-size: 13px; }
+.loan-card { padding: 18px; border: 1px solid #e6e2d9; border-radius: 12px; background: #fbfaf7; }
+.loan-card h2 { margin: 0; color: #193d34; font-size: 19px; }
+.loan-card p { margin: 8px 0 0; color: #5c6862; line-height: 1.45; }
+.loans-list { display: grid; gap: 12px; margin-top: 20px; }
+.retry-button { margin-top: 12px; }
 @media (max-width: 640px) { .page-shell { padding: 18px 14px; } .card { padding: 28px 22px; border-radius: 16px; } }
